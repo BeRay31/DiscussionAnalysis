@@ -17,9 +17,9 @@ class SVMRegressor:
     self.confusion_matrix = None
     self.classification_report = None
     self.pred = None
-    if self.config["model_path"]:
+    if self.config["load_model"]:
       self.model = load_model_with_pickle(self.config["model_path"])
-    if self.config["decomposer"]["model_path"]:
+    if self.config["decomposer"]["load_model"]:
       self.decomposer = load_model_with_pickle(self.config["decomposer"]["model_paths"])
 
   def fit_decomposer(self, X):

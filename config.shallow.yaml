@@ -25,7 +25,8 @@ embedder:
   max_sequence: 101
   log_oov: false
 regressor:
-  model_path:
+  load_model: false
+  model_path: "tst"
   type: svc
   kernel: rbf
   gamma: scale
@@ -33,7 +34,8 @@ regressor:
   max_iter: -1
   degree: 3
   decomposer:
-    model_path:
+    load_model: false
+    model_path: "tst"
     type: pca
     variance_tolerance: 0.8
     svd_solver: auto

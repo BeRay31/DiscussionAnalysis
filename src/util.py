@@ -19,6 +19,8 @@ def construct_datetime(time):
   return datetime.fromtimestamp(time).strftime("%A, %B %d, %Y %I:%M:%S")
 
 def construct_time(time_start, time_end = 0):
+  if time_start == None:
+    return None
   if time_end == 0:
     total = time_start
   else:
