@@ -72,18 +72,19 @@ class WordVectorsEmbedder:
 
   def fit(self, data):
     start = time.time()
-    model_type = config["model_type"]
-    print(f"Fitting {model_type} model with {len(data)} row data")
+    model_type = self.config["model_type"]
     key_list = self.config["key_list"].split("_")
     sentences = []
     for key in key_list:
       sentences += data[key].unique().tolist()
     tokenized_sentences = [word_tokenize(sent) for sent in sentences]
     if not self.model:
+      print(f"Training {model_type} model with {len(data)} row data")
       self.model = self.EmbedderClass(tokenized_sentences, vector_size=self.config["vector_size"],
         window=self.config["window"], min_count=self.config["window"], epochs=self.config["epoch"],
         seed=13518136)
     else:
+      print(f"Retrain {model_type} model with {len(data)} row data")
       self.model.build_vocab(tokenized_sentences)
       self.model.train(tokenized_sentences, total_examples=self.model.corpus_count, epochs=self.model.epochs)
     end = time.time()

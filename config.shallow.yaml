@@ -8,13 +8,14 @@ master:
   sampling: false
   labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
 loader:
-  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_rus
+  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_ros
   type: shallow
   model_type: svm
 embedder:
   model_type: word2vec
   model_behavior: concat
   is_pretrained: true
+  retrain: false
   model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model
   key_list: Tweet_Comment
   vector_size: 100
@@ -24,6 +25,7 @@ embedder:
   max_sequence: 101
   log_oov: false
 regressor:
+  model_path:
   type: svc
   kernel: rbf
   gamma: scale
@@ -31,6 +33,7 @@ regressor:
   max_iter: -1
   degree: 3
   decomposer:
+    model_path:
     type: pca
     variance_tolerance: 0.8
     svd_solver: auto

@@ -22,7 +22,7 @@ class ShallowTrainer(Trainer):
   
   def fit(self):
     # Train embedder
-    if not self.config["embedder"]["is_pretrained"]:
+    if not self.config["embedder"]["is_pretrained"] or self.config["embedder"]["retrain"]:
       self.embedder.fit(self.data["merged"])
     print("Embedder Successfully Trained")
 

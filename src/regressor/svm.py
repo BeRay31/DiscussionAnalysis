@@ -1,6 +1,7 @@
 from sklearn.svm import SVC
 from sklearn.decomposition import PCA
 from src.embedder import WordVectorsEmbedder
+from src.util import load_model_with_pickle
 from sklearn.metrics import confusion_matrix, classification_report
 import time
 import pandas as pd
@@ -16,7 +17,10 @@ class SVMRegressor:
     self.confusion_matrix = None
     self.classification_report = None
     self.pred = None
-
+    if self.config["model_path"]:
+      self.model = load_model_with_pickle(self.config["model_path"])
+    if self.config["decomposer"]["model_path"]:
+      self.decomposer = load_model_with_pickle(self.config["decomposer"]["model_paths"])
 
   def fit_decomposer(self, X):
     start = time.time()
@@ -60,6 +64,7 @@ class SVMRegressor:
     end = time.time()
     self.overall_predict_time = round(end - start, 2)
     self.model_score = self.model.score(X, Y)
+    
     # Metrics
     labels = self.config["labels"].split("_")
     self.confusion_matrix = confusion_matrix(Y, pred, labels=labels)

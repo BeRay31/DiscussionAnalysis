@@ -9,6 +9,9 @@ def save_model_with_pickle(model, path):
   pickle.dump(model, pickle_out)
   pickle_out.close()
 
+def load_model_with_pickle(path):
+  return pickle.load(open(path, "wb"))
+
 def get_config(path):
   return yaml.safe_load(open(path, "r"))
 
