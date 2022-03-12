@@ -1,1 +1,1 @@
-from .svm import SVM
+from .svm import SVMRegressor

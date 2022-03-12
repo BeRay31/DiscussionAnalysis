@@ -1,3 +1,4 @@
+from distutils.command.config import config
 import gensim
 from nltk.tokenize import word_tokenize
 import numpy as np
@@ -10,12 +11,16 @@ class WordVectorsEmbedder:
       self.EmbedderClass = gensim.models.fasttext.FastText
     else:
       self.EmbedderClass = gensim.models.word2vec.Word2Vec
-      
+
+    self.model = None
     if self.config["is_pretrained"]:
-      self.model = self.EmbedderClass.load(self.config["model_path"])
+      model_path = self.config["model_path"]
+      self.model = self.EmbedderClass.load(model_path)
+      print(f"Model at {model_path} successfully loaded")
     
     if self.config["log_oov"]:
       self.oov_log = []
+
     self.padding = np.zeros(self.config["vector_size"],)
 
   def get_word_vector(self, word):
@@ -23,7 +28,7 @@ class WordVectorsEmbedder:
       word_vector = self.model.wv.get_vector(word)
     except KeyError:
       word_vector = self.padding
-      if self.enable_oov_log:
+      if self.config["log_oov"]:
         self.oov_log.append(word)
     return word_vector
 
@@ -44,14 +49,14 @@ class WordVectorsEmbedder:
     final_vector = np.asarray(vector).flatten() 
     return final_vector
 
-  def df_to_vector(self, df, concat = True):
+  def df_to_vector(self, df):
     key_list = self.config["key_list"].split("_")
     vector = []
     is_concat = self.config["model_behavior"] == "concat"
     for idx, row in df.iterrows():
       vector_temp = []
-      for key in keyList:
-        temp = self.text_to_vector(row[key])
+      for key in key_list:
+        temp = self.text_to_vectors(row[key])
         if is_concat:
           temp = temp.tolist()
         if len(vector_temp) == 0:
@@ -64,6 +69,8 @@ class WordVectorsEmbedder:
     return res
 
   def fit(self, data):
+    model_type = config["model_type"]
+    print(f"Fitting {model_type} model with {len(data)} row data")
     key_list = self.config["key_list"].split("_")
     sentences = []
     for key in key_list:
