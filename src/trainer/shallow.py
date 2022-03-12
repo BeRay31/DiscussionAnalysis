@@ -48,6 +48,7 @@ class ShallowTrainer(Trainer):
     with open(os.path.join(self.directory_path, "log.txt"), "w+") as f:
       msg = "Experiment datetime: {}\n".format(datetime.now())
       msg += "Experiment Prefix: {}\n".format(self.config["master"]["prefix"])
+      msg += "Experiment description: {}\n".format(self.config["master"]["description"])
       msg += "Data Path: {}\n".format(self.config["loader"]["data_path"])
       msg += "\n"
       msg += "========\t\t Embedder Details \t\t========\n\n"

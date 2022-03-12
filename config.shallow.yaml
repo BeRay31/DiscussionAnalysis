@@ -1,8 +1,9 @@
 master:
+  prefix: svm
   release_mode: patch
+  description: "This is model description"
   train_key: "train"
   test_key: "test"
-  prefix: svm
   save_path: D:\WorkBench\TA NLP\res
   label_key: Label
   sampling: false
