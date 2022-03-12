@@ -1,0 +1,20 @@
+master:
+  release_mode: patch
+  prefix: svm
+  save_path: D:\WorkBench\TA NLP\res
+loader:
+  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_normal
+  type: shallow
+  model_type: svm
+embedder:
+  model_type: word2vec
+  model_behavior: concat
+  is_pretrained: true
+  model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model
+  key_list: Tweet_Comment
+  vector_size: 100
+  window: 5
+  min_count: 1
+  epoch: 5
+  max_sequence: 101
+  log_oov: false

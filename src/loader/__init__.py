@@ -1,2 +1,1 @@
-from .word2vec import Word2Vec
-from .fasttext import FastText
+from .shallow_loader import ShallowLoader

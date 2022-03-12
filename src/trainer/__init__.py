@@ -1,1 +1,2 @@
-from .main import Trainer
+from .trainer import Trainer
+from .shallow import ShallowTrainer
