@@ -29,12 +29,12 @@ class ShallowTrainer(Trainer):
     # Train regressor
     train_key = self.config["master"]["train_key"]
     self.regressor.fit(self.data[train_key], self.embedder)
-    print("\nRegressor Successfully Trained")
+    print("\nRegressor Successfully Trained\n")
 
   def evaluate(self):
     test_key = self.config["master"]["test_key"]
     self.regressor.evaluate(self.data[test_key], self.embedder)
-    print("Model Successfully Evaluated Data")
+    print("Model Successfully Evaluated Data\n")
 
   def save(self):
     # Save Regressor (Model + Decomposer)
@@ -89,6 +89,7 @@ class ShallowTrainer(Trainer):
       msg += "\nClassification Report:\n{}\n".format(self.regressor.classification_report)
       f.write(msg)
     dump_config(os.path.join(self.directory_path, "config.yaml"), self.config)
+    print("Log and Model Successfully Saved to {}\n".format(self.directory_path))
 
 def main(config):
   trainer = ShallowTrainer(config)
@@ -98,4 +99,4 @@ def main(config):
   trainer.evaluate()
   print("========\t\t Trainer is Wrapping Up \t\t========")
   trainer.save()
-  print("🚀🚀🚀🚀🚀🚀\t\t Training Done! \t\t🚀🚀🚀🚀🚀🚀")
+  print("🚀🚀🚀🚀🚀🚀\t\t Trainer Flow Completed! \t\t🚀🚀🚀🚀🚀🚀")
