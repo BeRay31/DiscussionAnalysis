@@ -61,8 +61,9 @@ class SVMRegressor:
     self.overall_predict_time = round(end - start, 2)
     self.model_score = self.model.score(X, Y)
     # Metrics
-    self.confusion_matrix = confusion_matrix(Y, pred, labels=['Uncorrelated', 'Contra Sarcasm', 'Pro', 'Neutral', 'Contra', 'Pro Sarcasm'])
-    self.classification_report = classification_report(Y, pred, labels=['Uncorrelated', 'Contra Sarcasm', 'Pro', 'Neutral', 'Contra', 'Pro Sarcasm'])
+    labels = self.config["labels"].split("_")
+    self.confusion_matrix = confusion_matrix(Y, pred, labels=labels)
+    self.classification_report = classification_report(Y, pred, labels=labels)
 
     pred = pd.DataFrame(pred)
     self.pred = pd.concat([data, pred], axis=1)

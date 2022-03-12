@@ -148,7 +148,7 @@ class Trainer:
     self.res_data.columns = key_list + ["Labels", "Predictions"]
     self.could_log_metrics = True
 
-  def save_model_with_pickle(self, model, path):
+  def save_model_with_pickle(model, path):
     pickle_out = open(path, "wb")
     pickle.dump(model, pickle_out)
     pickle_out.close()

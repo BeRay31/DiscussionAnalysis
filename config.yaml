@@ -1,12 +1,12 @@
 master:
   release_mode: patch
+  train_key: "train"
+  test_key: "test"
   prefix: svm
   save_path: D:\WorkBench\TA NLP\res
   label_key: Label
   sampling: false
   labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
-train_key: "train"
-test_key: "test"
 loader:
   data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_rus
   type: shallow
@@ -27,10 +27,11 @@ regressor:
   type: svc
   kernel: rbf
   gamma: scale
-  verbose: true
+  verbose: false
   max_iter: -1
   degree: 3
   decomposer:
+    type: pca
     variance_tolerance: 0.8
     svd_solver: auto
 

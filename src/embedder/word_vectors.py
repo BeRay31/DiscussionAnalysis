@@ -3,7 +3,7 @@ import gensim
 from nltk.tokenize import word_tokenize
 import numpy as np
 import pandas as pd
-
+import time
 class WordVectorsEmbedder:
   def __init__(self, config):
     self.config = config
@@ -22,6 +22,8 @@ class WordVectorsEmbedder:
       self.oov_log = []
 
     self.padding = np.zeros(self.config["vector_size"],)
+    self.train_embedder_time = None
+    self.trained_with = None
 
   def get_word_vector(self, word):
     try:
@@ -69,6 +71,7 @@ class WordVectorsEmbedder:
     return res
 
   def fit(self, data):
+    start = time.time()
     model_type = config["model_type"]
     print(f"Fitting {model_type} model with {len(data)} row data")
     key_list = self.config["key_list"].split("_")
@@ -83,6 +86,8 @@ class WordVectorsEmbedder:
     else:
       self.model.build_vocab(tokenized_sentences)
       self.model.train(tokenized_sentences, total_examples=self.model.corpus_count, epochs=self.model.epochs)
+    end = time.time()
+    self.train_embedder_time = round(end - start, 2)
+    self.trained_with = len(tokenized_sentences)
 
-      
 
