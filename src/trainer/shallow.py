@@ -82,7 +82,7 @@ class ShallowTrainer(Trainer):
       msg += "Decomposer total mean: {}\n".format(sum(self.regressor.decomposer.mean_))
       msg += "\n"
       msg += "========\t\t Classification Details Recap \t\t========\n\n"
-      msg += "Overall Predict Time: {}\n".format(self.regressor.overall_predict_time)
+      msg += "Overall Predict Time: {}\n".format(construct_time(self.regressor.overall_predict_time))
       msg += "Classifier Score: {}\n".format(self.regressor.model_score)
       msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
       msg += "\nConfusion matrix:\n{}\n".format(self.regressor.confusion_matrix)
