@@ -85,8 +85,8 @@ class WordVectorsEmbedder:
         seed=13518136)
     else:
       print(f"Retrain {model_type} model with {len(data)} row data")
-      self.model.build_vocab(tokenized_sentences)
-      self.model.train(tokenized_sentences, total_examples=self.model.corpus_count, epochs=self.model.epochs)
+      self.model.build_vocab(tokenized_sentences, update=True)
+      self.model.train(tokenized_sentences, total_examples=len(tokenized_sentences), epochs=self.model.epochs)
     end = time.time()
     self.train_embedder_time = round(end - start, 2)
     self.trained_with = len(tokenized_sentences)

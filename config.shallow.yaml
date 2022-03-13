@@ -9,14 +9,14 @@ master:
   sampling: false
   labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
 loader:
-  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_ros
+  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_rus
   type: shallow
   model_type: svm
 embedder:
   model_type: word2vec
   model_behavior: concat
   is_pretrained: true
-  retrain: false
+  retrain: true
   model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model
   key_list: Tweet_Comment
   vector_size: 100
