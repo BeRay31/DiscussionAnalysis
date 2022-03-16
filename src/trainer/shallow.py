@@ -65,16 +65,16 @@ class ShallowTrainer(Trainer):
       msg += "\n"
       msg += "========\t\t Regressor Details \t\t========\n\n"
       msg += "Regressor type: {}\n".format(self.config["regressor"]["type"])
-      msg += "Regressor kernel: {}\n".format(self.config["regressor"]["kernel"])
-      msg += "Regressor gamma: {}\n".format(self.config["regressor"]["gamma"])
-      msg += "Regressor max_iter: {}\n".format(self.config["regressor"]["max_iter"])
-      msg += "Regressor degree: {}\n".format(self.config["regressor"]["degree"])
+      msg += "Regressor kernel: {}\n".format(self.config["regressor"]["svm_config"]["kernel"])
+      msg += "Regressor gamma: {}\n".format(self.config["regressor"]["svm_config"]["gamma"])
+      msg += "Regressor max_iter: {}\n".format(self.config["regressor"]["svm_config"]["max_iter"])
+      msg += "Regressor degree: {}\n".format(self.config["regressor"]["svm_config"]["degree"])
       msg += "Regressor train time: {}\n".format(construct_time(self.regressor.train_model_time))
       msg += "\n"
       msg += "========\t\t Decomposer Details \t\t========\n\n"
       msg += "Decomposer type: {}\n".format(self.config["regressor"]["decomposer"]["type"])
-      msg += "Decomposer variance_tolerance: {}\n".format(self.config["regressor"]["decomposer"]["variance_tolerance"])
-      msg += "Decomposer svd_solver: {}\n".format(self.config["regressor"]["decomposer"]["svd_solver"])
+      msg += "Decomposer variance_tolerance: {}\n".format(self.config["regressor"]["decomposer"]["decomposer_config"]["n_components"])
+      msg += "Decomposer svd_solver: {}\n".format(self.config["regressor"]["decomposer"]["decomposer_config"]["svd_solver"])
       msg += "Number of features: {}\n".format(self.regressor.decomposer.n_features_)
       msg += "Number of components: {}\n".format(self.regressor.decomposer.n_components_)
       msg += "Decomposer train time: {}\n".format(construct_time(self.regressor.train_decomposer_time))

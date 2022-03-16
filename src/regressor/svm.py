@@ -24,16 +24,14 @@ class SVMRegressor:
 
   def fit_decomposer(self, X):
     start = time.time()
-    self.decomposer = PCA(n_components=self.config["decomposer"]["variance_tolerance"], svd_solver=self.config["decomposer"]["svd_solver"],
-      random_state=13518136)
+    self.decomposer = PCA(**self.config["decomposer"]["decomposer_config"], random_state=13518136)
     self.decomposer.fit(X)
     end = time.time()
     self.train_decomposer_time = round(end - start, 2)
   
   def fit_model(self, X, Y):
     start = time.time()
-    self.model = SVC(kernel=self.config["kernel"], gamma=self.config["gamma"],
-      max_iter=self.config["max_iter"], degree=self.config["degree"], verbose=self.config["verbose"], random_state=13518136)
+    self.model = SVC(**self.config["svm_config"], random_state=13518136)
     self.model.fit(X, Y)
     end = time.time()
     self.train_model_time = round(end - start, 2)
