@@ -32,8 +32,8 @@ class ShallowTrainer(Trainer):
     print("\nRegressor Successfully Trained\n")
 
   def evaluate(self):
-    test_key = self.config["master"]["test_key"]
-    self.regressor.evaluate(self.data[test_key], self.embedder)
+    dev_key = self.config["master"]["dev_key"]
+    self.regressor.evaluate(self.data[dev_key], self.embedder)
     print("Model Successfully Evaluated Data\n")
 
   def save(self):
