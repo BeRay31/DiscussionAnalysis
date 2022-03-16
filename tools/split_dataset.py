@@ -61,13 +61,13 @@ class DataSplitter:
       raise ValueError("data_column_names has different length with the data")
     train = pd.concat([x1, y1], axis=1)
     train.columns = data_column_names
-    test = pd.concat([x2, y2], axis=1)
-    test.columns = data_column_names
+    dev = pd.concat([x2, y2], axis=1)
+    dev.columns = data_column_names
     # save data
     data_dir = os.path.join(self.save_path, f"{self.prefix}_{suffix}")
     os.mkdir(data_dir)
     train.to_csv(os.path.join(data_dir, "train.csv"))
-    test.to_csv(os.path.join(data_dir, "test.csv"))
+    dev.to_csv(os.path.join(data_dir, "dev.csv"))
     print(f"New {self.prefix}_{suffix} data saved at {data_dir}")
 
 

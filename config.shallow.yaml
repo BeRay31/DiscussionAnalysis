@@ -3,7 +3,7 @@ master:
   release_mode: patch
   description: "This is model description"
   train_key: train
-  test_key: test
+  dev_key: dev
   save_path: D:\WorkBench\TA NLP\res
   label_key: Label
   sampling: false
