@@ -1,4 +1,4 @@
-from src.regressor import ShallowRegressor
+from src.classifier import ShallowClassifier
 from src.embedder import WordVectorsEmbedder
 from src.loader import ShallowLoader
 from .trainer import Trainer
@@ -15,8 +15,8 @@ class ShallowTrainer(Trainer):
     self.embedder = WordVectorsEmbedder(
       {**self.config["master"], **self.config["embedder"]}
     )
-    self.regressor = ShallowRegressor(
-      {**self.config["master"], **self.config["regressor"]}
+    self.classifier = ShallowClassifier(
+      {**self.config["master"], **self.config["classifier"]}
     )
     self.data = self.loader()
   
@@ -26,24 +26,24 @@ class ShallowTrainer(Trainer):
       self.embedder.fit(self.data["merged"])
     print("Embedder Successfully Trained")
 
-    # Train regressor
+    # Train classifier
     train_key = self.config["master"]["train_key"]
-    self.regressor.fit(self.data[train_key], self.embedder)
-    print("\nRegressor Successfully Trained\n")
+    self.classifier.fit(self.data[train_key], self.embedder)
+    print("\nClassifier Successfully Trained\n")
 
   def evaluate(self):
     dev_key = self.config["master"]["dev_key"]
-    self.regressor.evaluate(self.data[dev_key], self.embedder)
+    self.classifier.evaluate(self.data[dev_key], self.embedder)
     print("Model Successfully Evaluated Data\n")
 
   def save(self):
-    # Save Regressor (Model + Decomposer)
-    save_model_with_pickle(self.regressor.model, os.path.join(self.directory_path, "regressor.model"))
-    save_model_with_pickle(self.regressor.decomposer, os.path.join(self.directory_path, "decomposer.model"))
+    # Save Classifier (Model + Decomposer)
+    save_model_with_pickle(self.classifier.model, os.path.join(self.directory_path, "classifier.model"))
+    save_model_with_pickle(self.classifier.decomposer, os.path.join(self.directory_path, "decomposer.model"))
     # Save Embedder
     self.embedder.model.save(os.path.join(self.directory_path, self.config["embedder"]["model_type"]+".model"))
     # Save Prediction to CSV
-    self.regressor.pred.to_csv(os.path.join(self.directory_path, "pred.csv"))
+    self.classifier.pred.to_csv(os.path.join(self.directory_path, "pred.csv"))
     # Log Result
     with open(os.path.join(self.directory_path, "log.txt"), "w+") as f:
       msg = "Experiment datetime: {}\n".format(datetime.now())
@@ -63,31 +63,31 @@ class ShallowTrainer(Trainer):
       msg += "Current train time: {}\n".format(construct_time(self.embedder.train_embedder_time))
       msg += "Total train sentences: {}\n".format(self.embedder.trained_with)
       msg += "\n"
-      msg += "========\t\t Regressor Details \t\t========\n\n"
-      msg += "Regressor type: {}\n".format(self.config["regressor"]["type"])
-      msg += "Regressor kernel: {}\n".format(self.config["regressor"]["svm_config"]["kernel"])
-      msg += "Regressor gamma: {}\n".format(self.config["regressor"]["svm_config"]["gamma"])
-      msg += "Regressor max_iter: {}\n".format(self.config["regressor"]["svm_config"]["max_iter"])
-      msg += "Regressor degree: {}\n".format(self.config["regressor"]["svm_config"]["degree"])
-      msg += "Regressor train time: {}\n".format(construct_time(self.regressor.train_model_time))
+      msg += "========\t\t Classifier Details \t\t========\n\n"
+      msg += "Classifier type: {}\n".format(self.config["classifier"]["type"])
+      msg += "Classifier kernel: {}\n".format(self.config["classifier"]["svm_config"]["kernel"])
+      msg += "Classifier gamma: {}\n".format(self.config["classifier"]["svm_config"]["gamma"])
+      msg += "Classifier max_iter: {}\n".format(self.config["classifier"]["svm_config"]["max_iter"])
+      msg += "Classifier degree: {}\n".format(self.config["classifier"]["svm_config"]["degree"])
+      msg += "Classifier train time: {}\n".format(construct_time(self.classifier.train_model_time))
       msg += "\n"
       msg += "========\t\t Decomposer Details \t\t========\n\n"
-      msg += "Decomposer type: {}\n".format(self.config["regressor"]["decomposer"]["type"])
-      msg += "Decomposer variance_tolerance: {}\n".format(self.config["regressor"]["decomposer"]["decomposer_config"]["n_components"])
-      msg += "Decomposer svd_solver: {}\n".format(self.config["regressor"]["decomposer"]["decomposer_config"]["svd_solver"])
-      msg += "Number of features: {}\n".format(self.regressor.decomposer.n_features_)
-      msg += "Number of components: {}\n".format(self.regressor.decomposer.n_components_)
-      msg += "Decomposer train time: {}\n".format(construct_time(self.regressor.train_decomposer_time))
-      msg += "Total explained variance ratio: {}\n".format(sum(self.regressor.decomposer.explained_variance_ratio_))
-      msg += "Noise variance: {}\n".format(self.regressor.decomposer.noise_variance_)
-      msg += "Decomposer total mean: {}\n".format(sum(self.regressor.decomposer.mean_))
+      msg += "Decomposer type: {}\n".format(self.config["classifier"]["decomposer"]["type"])
+      msg += "Decomposer variance_tolerance: {}\n".format(self.config["classifier"]["decomposer"]["decomposer_config"]["n_components"])
+      msg += "Decomposer svd_solver: {}\n".format(self.config["classifier"]["decomposer"]["decomposer_config"]["svd_solver"])
+      msg += "Number of features: {}\n".format(self.classifier.decomposer.n_features_)
+      msg += "Number of components: {}\n".format(self.classifier.decomposer.n_components_)
+      msg += "Decomposer train time: {}\n".format(construct_time(self.classifier.train_decomposer_time))
+      msg += "Total explained variance ratio: {}\n".format(sum(self.classifier.decomposer.explained_variance_ratio_))
+      msg += "Noise variance: {}\n".format(self.classifier.decomposer.noise_variance_)
+      msg += "Decomposer total mean: {}\n".format(sum(self.classifier.decomposer.mean_))
       msg += "\n"
       msg += "========\t\t Classification Details Recap \t\t========\n\n"
-      msg += "Overall predict time: {}\n".format(construct_time(self.regressor.overall_predict_time))
-      msg += "Model score: {}\n".format(self.regressor.model_score)
+      msg += "Overall predict time: {}\n".format(construct_time(self.classifier.overall_predict_time))
+      msg += "Model score: {}\n".format(self.classifier.model_score)
       msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
-      msg += "\nConfusion matrix:\n{}\n".format(self.regressor.confusion_matrix)
-      msg += "\nClassification report:\n{}\n".format(self.regressor.classification_report)
+      msg += "\nConfusion matrix:\n{}\n".format(self.classifier.confusion_matrix)
+      msg += "\nClassification report:\n{}\n".format(self.classifier.classification_report)
       f.write(msg)
     dump_config(os.path.join(self.directory_path, "config.yaml"), self.config)
     print("Log and Model Successfully Saved to {}\n".format(self.directory_path))

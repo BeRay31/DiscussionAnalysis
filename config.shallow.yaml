@@ -27,7 +27,7 @@ embedder:
   epoch: 5
   max_sequence: 101
   log_oov: false
-regressor:
+classifier:
   load_model: false
   model_path: "tst"
   type: svc

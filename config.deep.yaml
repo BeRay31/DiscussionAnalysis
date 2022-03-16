@@ -9,7 +9,6 @@ master:
   labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
   label_key: Label
   key_list: Tweet_Comment
-
 loader:
   data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_rus
   tokenizer_type: bert | xlnet
@@ -19,35 +18,7 @@ loader:
     padding: max_length
     return_tensors: tf
     truncation: true
-
-embedder:
-  model_type: word2vec
-  model_behavior: concat
-  is_pretrained: true
-  retrain: true
-  model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model
-  key_list: Tweet_Comment
-  vector_size: 100
-  window: 5
-  min_count: 1
-  epoch: 5
-  max_sequence: 101
-  log_oov: false
-
-regressor:
-  load_model: false
-  model_path: "tst"
-  type: svc
-  svm_config:
-    kernel: rbf
-    gamma: scale
-    verbose: false
-    max_iter: -1
-    degree: 3
-  decomposer:
-    load_model: false
-    model_path: "tst"
-    type: pca
-    variance_tolerance: 0.8
-    svd_solver: auto
+classifier:
+  type: bert | xlnet
+  model_name: indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
 

@@ -5,7 +5,7 @@ from src.util import load_model_with_pickle
 from sklearn.metrics import confusion_matrix, classification_report
 import time
 import pandas as pd
-class ShallowRegressor:
+class ShallowClassifier:
   def __init__(self, config):
     self.config = config
     self.model = None
