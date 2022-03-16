@@ -15,3 +15,6 @@ if __name__ == "__main__":
   if args.run_type.lower() == "shallow":
     from src.trainer.shallow import main
     main(args.config)
+  elif args.run_type.lower() == "deep":
+    from src.trainer.deep import main
+    main(args.config)

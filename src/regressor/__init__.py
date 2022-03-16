@@ -1,1 +1,1 @@
-from .svm import SVMRegressor
+from .shallow import ShallowRegressor

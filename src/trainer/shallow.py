@@ -1,4 +1,4 @@
-from src.regressor import SVMRegressor
+from src.regressor import ShallowRegressor
 from src.embedder import WordVectorsEmbedder
 from src.loader import ShallowLoader
 from .trainer import Trainer
@@ -15,7 +15,7 @@ class ShallowTrainer(Trainer):
     self.embedder = WordVectorsEmbedder(
       {**self.config["master"], **self.config["embedder"]}
     )
-    self.regressor = SVMRegressor(
+    self.regressor = ShallowRegressor(
       {**self.config["master"], **self.config["regressor"]}
     )
     self.data = self.loader()
