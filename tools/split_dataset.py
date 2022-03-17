@@ -35,7 +35,7 @@ class DataSplitter:
     if self.preprocessing:
       self.dataFrame = DataPreprocessor(self.dataFrame, os.path.abspath(os.path.join(self.data_path, os.pardir))).main()
 
-  def sampling(self, model_type = "ros", label_key = "Label"):
+  def sampling(self, dfTrain: pd.DataFrame, dfDev: pd.DataFrame, dev_resample = False, model_type = "ros", label_key = "Label"):
     """
     model_type ==> ros | rus
     """
@@ -43,14 +43,22 @@ class DataSplitter:
       SamplingModel = self.ros_model
     else:
       SamplingModel = self.rus_model
-    X = self.dataFrame.drop([label_key], axis=1)
-    Y = self.dataFrame[label_key]
+    X_train = dfTrain.drop([label_key], axis=1)
+    Y_train = dfTrain[label_key]
+    X_dev = dfDev.drop([label_key], axis=1)
+    Y_dev = dfDev[label_key]
     print(f"Resampling data with {model_type}")
-    return SamplingModel.fit_resample(X, Y)
+    X_train, Y_train = SamplingModel.fit_resample(X_train, Y_train)
+    if dev_resample:
+      X_dev, Y_dev = SamplingModel.fit_resample(X_dev, Y_dev)
+    return X_train, X_dev, Y_train, Y_dev
   
-  def split(self, X, Y):
-    return train_test_split(X, Y, random_state=self.random_state, test_size=self.test_size)
-
+  def split(self, X, Y, raw = False):
+    x1, x2, y1, y2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.test_size)
+    if raw:
+      return x1, x2, y1, y2
+    return pd.concat([x1, y1], axis = 1), pd.concat([x2, y2], axis = 1)
+    
   def save_data(self, x1, x2, y1, y2, data_column_names=[], suffix="normal"):
     """
     suffix ==> normal | rus | ros
@@ -76,13 +84,14 @@ class DataSplitter:
     # Normal
     X = self.dataFrame.drop(["Label"], axis=1)
     Y = self.dataFrame["Label"]
-    self.save_data(*self.split(X, Y))
+    self.save_data(*self.split(X, Y, raw = True))
+    
     # Sampling
     if self.is_sampling_enabled:
       # ros
-      self.save_data(*self.split(*self.sampling()), suffix="ros")
+      self.save_data(*self.sampling(*self.split(X, Y), model_type="ros", dev_resample = False), suffix="ros")
       # rus
-      self.save_data(*self.split(*self.sampling(model_type="rus")), suffix="rus")
+      self.save_data(*self.sampling(*self.split(X, Y), model_type="rus", dev_resample = False), suffix="rus")
 
 if __name__  == '__main__':
   parser = argparse.ArgumentParser(
