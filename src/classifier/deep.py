@@ -2,13 +2,13 @@ import tensorflow as tf
 from transformers import TFBertModel, XLNetModel
 
 tf.random.set_seed(13518136)
-from tensorflow.keras import Model
-from tensorflow.keras.layers import (
+from keras import Model
+from keras.layers import (
     Dense,
     LSTM,
     GRU,
     Dropout,
-    Bidirectional,
+    Bidirectional
 )
 WORD_VECTORS = ["word2vec", "fasttext"]
 class DeepClassifier(Model):
