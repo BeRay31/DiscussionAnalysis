@@ -74,8 +74,8 @@ class DataSplitter:
     # save data
     data_dir = os.path.join(self.save_path, f"{self.prefix}_{suffix}")
     os.mkdir(data_dir)
-    train.to_csv(os.path.join(data_dir, "train.csv"))
-    dev.to_csv(os.path.join(data_dir, "dev.csv"))
+    train.to_csv(os.path.join(data_dir, "train.csv"), index=False)
+    dev.to_csv(os.path.join(data_dir, "dev.csv"), index=False)
     print(f"New {self.prefix}_{suffix} data saved at {data_dir}")
 
 

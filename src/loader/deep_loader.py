@@ -39,11 +39,39 @@ class DeepLoader:
     else:
       self.test = pd.DataFrame([])
 
+  def one_hot_encoding_based_on_labels(self, val):
+    labels = self.config["labels"].split("_")
+    arr = []
+    for label in labels:
+      if label == val:
+        arr.append(1)
+      else:
+        arr.append(0)
+
+  def one_hot_df(self, df: pd.DataFrame):
+    arr = []
+    for index, row in df.iterrows():
+      arr.append(
+        self.one_hot_encoding_based_on_labels(row[self.config["label_key"]])
+      )
+    return arr
+
   def __tokenize(self, sample):
     train = self.train
     dev = self.dev
     merged = self.merged_data
     test = self.test
+    if sample:
+      train = train.sample(5)
+      dev = dev.sample(5)
+      merged = merged.sample(5)
+      if not test.empty:
+        test = test.sample(5)
+    
+    train = train.reset_index(drop=True)
+    dev = dev.reset_index(drop=True)
+    merged = merged.reset_index(drop=True)
+    test = test.reset_index(drop=True)
 
     key_list = self.config["key_list"].split("_")
     x_train, x_dev, x_test = {}, {}, {}
@@ -61,8 +89,8 @@ class DeepLoader:
         **self.config["tokenizer_config"]
       )
     )
-    y_train = np.array(train[self.config["label_key"]])
-    y_dev = np.array(dev[self.config["label_key"]])
+    y_train = np.array(self.one_hot_df(train[self.config["label_key"]]))
+    y_dev = np.array(self.one_hot_df(dev[self.config["label_key"]]))
     y_test = np.array([])
     if not self.test.empty:
       x_test = dict(
@@ -72,7 +100,7 @@ class DeepLoader:
           **self.config["tokenizer_config"]
         )
       )
-      y_test = np.array(test[self.config["label_key"]])
+      y_test = np.array(self.one_hot_df(test[self.config["label_key"]]))
     
     res = {
       "x_train": x_train,
@@ -88,9 +116,9 @@ class DeepLoader:
 
     return res
 
-  def __call__(self):
+  def __call__(self, sample=False):
     self.__drop_null()
-    return self.__tokenize()
+    return self.__tokenize(sample)
 
 
 

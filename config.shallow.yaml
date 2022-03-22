@@ -1,16 +1,15 @@
 master:
   prefix: svm
   release_mode: patch
-  description: "This is model description"
+  description: This is model description
   train_key: train
   dev_key: dev
-  save_path: D:\WorkBench\TA NLP\res
+  save_path: 'D:\WorkBench\TA NLP\res'
   label_key: Label
-  sampling: false
-  labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
+  labels: Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm
 loader:
-  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_rus
-  test_data_path: D:\WorkBench\TA NLP\dataset_splitted\test.csv
+  data_path: 'D:\WorkBench\TA NLP\dataset_splitted\rey_rus'
+  test_data_path: 'D:\WorkBench\TA NLP\dataset_splitted\test.csv'
   type: shallow
   model_type: svm
   key_list: Tweet_Comment
@@ -19,7 +18,7 @@ embedder:
   model_behavior: concat
   is_pretrained: true
   retrain: true
-  model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model
+  model_path: 'D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model'
   key_list: Tweet_Comment
   vector_size: 100
   window: 5
@@ -29,7 +28,7 @@ embedder:
   log_oov: false
 classifier:
   load_model: false
-  model_path: "tst"
+  model_path: tst
   type: svc
   svm_config:
     kernel: rbf
@@ -39,9 +38,8 @@ classifier:
     degree: 3
   decomposer:
     load_model: false
-    model_path: "tst"
+    model_path: tst
     type: pca
     decomposer_config:
       n_components: 0.8
       svd_solver: auto
-

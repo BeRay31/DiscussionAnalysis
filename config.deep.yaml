@@ -5,7 +5,7 @@ master:
   train_key: train
   dev_key: dev
   save_path: D:\WorkBench\TA NLP\res
-  sampling: false
+  sampling: true
   labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
   label_key: Label
   key_list: Tweet_Comment
@@ -14,11 +14,21 @@ loader:
   tokenizer_type: bert | xlnet
   model_name: indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
   tokenizer_config:
-    max_length: 280
+    max_length: 128
     padding: max_length
     return_tensors: tf
     truncation: true
 classifier:
   type: bert | xlnet
   model_name: indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
+  recurrent_layer: lstm | bilstm | gru | bigru | dense
+  recurrent_unit: 64
+  recurrent_dropout: 0.4
+trainer:
+  batch_size: 4
+  learning_rate: 5.0e-05
+  epochs: 20
+
+
+
 
