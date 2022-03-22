@@ -10,6 +10,7 @@ from tensorflow.keras.layers import (
     Dropout,
     Bidirectional,
 )
+WORD_VECTORS = ["word2vec", "fasttext"]
 class DeepClassifier(Model):
   def __init__(self, config):
     super().__init__()
@@ -30,8 +31,6 @@ class DeepClassifier(Model):
       self.recurrent = GRU(self.config["recurrent_config"])
     elif self.config["recurrent_layer"].lower() == "bigru":
       self.recurrent = Bidirectional(GRU(self.config["recurrent_config"]))
-    elif self.config["recurrent_layer"].lower() == "dense":
-      self.recurrent = Dense(self.config["recurrent_unit"], activation="relu")
     else:
       self.recurrent = None
       raise ValueError("only support (lstm | bilstm | gru | bigru) layer type")
@@ -44,14 +43,13 @@ class DeepClassifier(Model):
     self.output = Dense(len(labels), activation="softmax", name="classifier")
   
   def call(self, X, training=None):
-    embedding_part_taken = (
-      "last_hidden_state" if self.config["recurrent_layer"].lower() in ["lstm", "bilstm", "gru", "bigru"]
-      else "pooler_output"
-    )
 
-    # Pass to BERT or XLNet Model
-    X_embed = self.embedder(X)[embedding_part_taken]
-    
+    if not self.config["type"] in WORD_VECTORS:
+      # Pass to BERT or XLNet Model
+      X_embed = self.embedder(X)["last_hidden_state"]
+    else:
+      X_embed = X
+
     # Passed to recurrent layer
     X_recurrent = X_embed
     if self.recurrent != None:

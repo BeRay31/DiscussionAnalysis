@@ -31,7 +31,7 @@ def dump_config(path, config):
   with open(path, "w+") as f:
     f.write(yaml.dump(config))
 
-def get_latest_version(folder, prefix, mode="patch"):
+def get_latest_version(folder, prefix, mode="patch", suffix=""):
   """
   mode --> (major | minor | patch)
   """
@@ -46,11 +46,21 @@ def get_latest_version(folder, prefix, mode="patch"):
     return "0.0.0"
 
   major, minor, patch = sorted(versions, reverse=True)[0]
+  res = ""
   if mode == "major":
-    return f"{major+1}.0.0"
+    res = f"{major+1}.0.0"
   elif mode == "minor":
-    return f"{major}.{minor+1}.0"
+    res = f"{major}.{minor+1}.0"
   elif mode == "patch":
-    return f"{major}.{minor}.{patch+1}"
+    res = f"{major}.{minor}.{patch+1}"
   else:
     raise ValueError("only support (major | minor | patch) => (major).(minor).(patch")
+  if suffix:
+    res = f"{res}.{suffix}"
+  return res
+
+def write_dict(data):
+  msg = ""
+  for key, val in data.items():
+    msg += f"{key}: {val}\n"
+  return msg

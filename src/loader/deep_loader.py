@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 import os
-
+from src.embedder import WordVectorsEmbedder
 from transformers import BertTokenizer, XLNetTokenizer
 
+WORD_VECTORS = ["word2vec", "fasttext"]
 class DeepLoader:
   def __init__(self, config):
     self.config = config
@@ -12,6 +13,14 @@ class DeepLoader:
       self.tokenizer = BertTokenizer.from_pretrained(self.config["model_name"])
     elif self.config["tokenizer_type"] == "xlnet":
       self.tokenizer = XLNetTokenizer.from_pretrained(self.config["model_name"])
+    elif self.config["tokenizer_type"] in WORD_VECTORS:
+      self.tokenizer = WordVectorsEmbedder(
+        {
+          **self.config["tokenizer_config"],
+          "label_key": self.config["label_key"],
+          "key_list": self.config["key_list"]
+        }
+      )
     
     data_path = self.config["data_path"]
     self.train = pd.read_csv(os.path.join(data_path, "train.csv")).reset_index(drop=True)
@@ -73,34 +82,43 @@ class DeepLoader:
     merged = merged.reset_index(drop=True)
     test = test.reset_index(drop=True)
 
-    key_list = self.config["key_list"].split("_")
-    x_train, x_dev, x_test = {}, {}, {}
-    x_train = dict(
-      self.tokenizer(
-        list(self.train[key_list[0]]),
-        list(self.train[key_list[1]]),
-        **self.config["tokenizer_config"]
-      )
-    )
-    x_dev = dict(
-      self.tokenizer(
-        list(self.dev[key_list[0]]),
-        list(self.dev[key_list[1]]),
-        **self.config["tokenizer_config"]
-      )
-    )
     y_train = np.array(self.one_hot_df(train[self.config["label_key"]]))
     y_dev = np.array(self.one_hot_df(dev[self.config["label_key"]]))
     y_test = np.array([])
-    if not self.test.empty:
-      x_test = dict(
+    
+    key_list = self.config["key_list"].split("_")
+    x_train, x_dev, x_test = {}, {}, {}
+    if self.config["tokenizer_type"] in WORD_VECTORS:
+      x_train = self.tokenizer.df_to_vector(train)
+      x_dev = self.tokenizer.df_to_vector(dev)
+    else:
+      x_train = dict(
         self.tokenizer(
-          list(self.test[key_list[0]]),
-          list(self.test[key_list[1]]),
+          list(self.train[key_list[0]]),
+          list(self.train[key_list[1]]),
           **self.config["tokenizer_config"]
         )
       )
+      x_dev = dict(
+        self.tokenizer(
+          list(self.dev[key_list[0]]),
+          list(self.dev[key_list[1]]),
+          **self.config["tokenizer_config"]
+        )
+      )
+    
+    if not self.test.empty:
       y_test = np.array(self.one_hot_df(test[self.config["label_key"]]))
+      if self.config["tokenizer_type"] in WORD_VECTORS:
+        x_test = self.tokenizer.df_to_vector(test)
+      else:
+        x_test = dict(
+          self.tokenizer(
+            list(self.test[key_list[0]]),
+            list(self.test[key_list[1]]),
+            **self.config["tokenizer_config"]
+          )
+        )
     
     res = {
       "x_train": x_train,

@@ -1,27 +1,35 @@
 master:
-  prefix: bert | xlnet
+  prefix: deep_ # bert | xlnet | word2vec | fasttext
   release_mode: patch
-  description: This is model description
+  description: # This is model description
   train_key: train
   dev_key: dev
-  save_path: D:\WorkBench\TA NLP\res
+  save_path: # save folder path
   sampling: true
-  labels: 'Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm'
+  labels: Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm
   label_key: Label
   key_list: Tweet_Comment
 loader:
-  data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_rus
-  tokenizer_type: bert | xlnet
-  model_name: indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
+  data_path: / # path to data
+  tokenizer_type: bert # bert | xlnet | word2vec | fasttext
+  model_name: indobenchmark/indobert-base-p2 # indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
   tokenizer_config:
-    max_length: 128
+    max_length: 512
     padding: max_length
     return_tensors: tf
     truncation: true
+    # for word vectors
+    model_type: word2vec # word2vec | fasttext
+    is_pretrained: true
+    model_path: / #path to model
+    log_oov: false
+    vector_size: 100 
+    max_sequence: 256 # max_length/2
+    model_behavior: concat # concat | combine
 classifier:
-  type: bert | xlnet
+  type: bert # bert | xlnet | word2vec | fasttext
   model_name: indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
-  recurrent_layer: lstm | bilstm | gru | bigru | dense
+  recurrent_layer: lstm | bilstm | gru | bigru
   recurrent_unit: 64
   recurrent_dropout: 0.4
 trainer:
