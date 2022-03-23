@@ -58,41 +58,50 @@ class DeepTrainer(Trainer):
     self.models_path = os.path.join(self.directory_path, "models")
     os.mkdir(self.models_path)
 
-    self.model = DeepClassifier(
-      {**self.config["master"], **self.config["classifier"]}
-    )
+    # Set GPU
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
+    config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
+    taken_gpu = []
+    for i, gpu_name in enumerate(gpu_names):
+        if i in config_taken:
+            taken_gpu.append(gpu_name)
+    print(f"Taken GPU: {taken_gpu}")
+    strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
 
-    # Compile model
-    self.model.compile(
-      loss=CategoricalCrossentropy(),
-      optimizer=Adam(learning_rate=self.config["trainer"]["learning_rate"]),
-    )
-
-    # Define train callbacks
-    callbacks = [
-      LearningRateScheduler(scheduler),
-      ModelCheckpoint(
-        filepath=os.path.join(self.models_path, 
-        f"{get_latest_version(self.models_path, 'model_epoch-', suffix='dlw')}"),
-        save_weights_only=True
+    with strategy.scope():
+      self.model = DeepClassifier(
+        {**self.config["master"], **self.config["classifier"]}
       )
-    ]
 
-    start = time()
-    # Fit Model
-    self.model.fit(
-      self.data["x_train"],
-      self.data["y_train"],
-      batch_size=self.config["trainer"]["batch_size"],
-      epochs=self.config["trainer"]["epochs"],
-      validation_data=(self.data["x_dev"], self.data["y_dev"]),
-      callbacks=callbacks,
-    )
-    end = time()
-    self.overall_time_train = round(end - start, 2)
+      # Compile model
+      self.model.compile(
+        loss=CategoricalCrossentropy(),
+        optimizer=Adam(learning_rate=self.config["trainer"]["learning_rate"]),
+      )
 
-    # print summary
-    self.model.summary()
+      # Define train callbacks
+      callbacks = [
+        LearningRateScheduler(scheduler),
+        ModelCheckpoint(
+          filepath=os.path.join(self.models_path, 
+          f"{get_latest_version(self.models_path, 'model_epoch-', suffix='dlw')}"),
+          save_weights_only=True
+        )
+      ]
+
+      start = time()
+      # Fit Model
+      self.model.fit(
+        self.data["x_train"],
+        self.data["y_train"],
+        batch_size=self.config["trainer"]["batch_size"],
+        epochs=self.config["trainer"]["epochs"],
+        validation_data=(self.data["x_dev"], self.data["y_dev"]),
+        callbacks=callbacks,
+      )
+      end = time()
+      self.overall_time_train = round(end - start, 2)
 
   def evaluate(self):
     # prepare dir for evaluation
