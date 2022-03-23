@@ -60,14 +60,22 @@ class ShallowClassifier:
     # Recap and predict
     pred = self.model.predict(X)
     end = time.time()
-    self.overall_predict_time = round(end - start, 2)
-    self.model_score = self.model.score(X, Y)
+    overall_predict_time = round(end - start, 2)
+    model_score = self.model.score(X, Y)
     
     # Metrics
     labels = self.config["labels"].split("_")
-    self.confusion_matrix = confusion_matrix(Y, pred, labels=labels)
-    self.classification_report = classification_report(Y, pred, labels=labels)
+    confusion_mat = confusion_matrix(Y, pred, labels=labels)
+    classification_rep = classification_report(Y, pred, labels=labels)
 
     pred = pd.DataFrame(pred)
-    self.pred = pd.concat([data, pred], axis=1)
-    self.pred.columns = data.columns.tolist() + ["Prediction"]
+    pred = pd.concat([data, pred], axis=1)
+    pred.columns = data.columns.tolist() + ["Prediction"]
+
+    return {
+      "predict_time": overall_predict_time,
+      "score": model_score,
+      "confusion_matrix": confusion_mat,
+      "classification_report": classification_rep,
+      "prediction": pred
+    }

@@ -32,18 +32,45 @@ class ShallowTrainer(Trainer):
     print("\nClassifier Successfully Trained\n")
 
   def evaluate(self):
+    train_key = self.config["master"]["train_key"]
     dev_key = self.config["master"]["dev_key"]
-    self.classifier.evaluate(self.data[dev_key], self.embedder)
+    test_key = self.config["master"]["test_key"]
+    
+    train_pred = self.classifier.evaluate(self.data[train_key], self.embedder)
+    dev_pred = self.classifier.evaluate(self.data[dev_key], self.embedder)
+    if not self.data[test_key].empty:
+      test_pred = self.classifier.evaluate(self.data[test_key], self.embedder)
+    test_pred = {}
     print("Model Successfully Evaluated Data\n")
 
-  def save(self):
+    return {
+      f"{train_key}": train_pred,
+      f"{dev_key}": dev_pred,
+      f"{test_key}": test_pred
+    }
+
+  def save(self, eval_result):
+    train_key = self.config["master"]["train_key"]
+    dev_key = self.config["master"]["dev_key"]
+    test_key = self.config["master"]["test_key"]
+
     # Save Classifier (Model + Decomposer)
     save_model_with_pickle(self.classifier.model, os.path.join(self.directory_path, "classifier.model"))
     save_model_with_pickle(self.classifier.decomposer, os.path.join(self.directory_path, "decomposer.model"))
+
     # Save Embedder
     self.embedder.model.save(os.path.join(self.directory_path, self.config["embedder"]["model_type"]+".model"))
+    
+    train_pred = eval_result[f"{train_key}"]
+    dev_pred = eval_result[f"{dev_key}"]
+    test_pred = eval_result[f"{test_key}"]
+
     # Save Prediction to CSV
-    self.classifier.pred.to_csv(os.path.join(self.directory_path, "pred.csv"))
+    train_pred["prediction"].to_csv(os.path.join(self.directory_path, "train_pred.csv"), index=False)
+    dev_pred["prediction"].to_csv(os.path.join(self.directory_path, "dev_pred.csv"), index=False)
+    if len(test_pred.keys()) > 0:
+      test_pred["prediction"].to_csv(os.path.join(self.directory_path, "test_pred.csv"), index=False)
+    
     # Log Result
     with open(os.path.join(self.directory_path, "log.txt"), "w+") as f:
       msg = "Experiment datetime: {}\n".format(datetime.now())
@@ -82,12 +109,28 @@ class ShallowTrainer(Trainer):
       msg += "Noise variance: {}\n".format(self.classifier.decomposer.noise_variance_)
       msg += "Decomposer total mean: {}\n".format(sum(self.classifier.decomposer.mean_))
       msg += "\n"
-      msg += "========\t\t Classification Details Recap \t\t========\n\n"
-      msg += "Overall predict time: {}\n".format(construct_time(self.classifier.overall_predict_time))
-      msg += "Model score: {}\n".format(self.classifier.model_score)
+      msg += "========\t\t Train Data Classification Details Recap \t\t========\n\n"
+      msg += "Predict time: {}\n".format(construct_time(train_pred["predict_time"]))
+      msg += "Score: {}\n".format(train_pred["score"])
       msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
-      msg += "\nConfusion matrix:\n{}\n".format(self.classifier.confusion_matrix)
-      msg += "\nClassification report:\n{}\n".format(self.classifier.classification_report)
+      msg += "\nConfusion matrix:\n{}\n".format(train_pred["confusion_matrix"])
+      msg += "\nClassification report:\n{}\n".format(train_pred["classification_report"])
+      msg += "\n"
+      msg += "========\t\t Dev Data Classification Details Recap \t\t========\n\n"
+      msg += "Predict time: {}\n".format(construct_time(dev_pred["predict_time"]))
+      msg += "Score: {}\n".format(dev_pred["score"])
+      msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
+      msg += "\nConfusion matrix:\n{}\n".format(dev_pred["confusion_matrix"])
+      msg += "\nClassification report:\n{}\n".format(dev_pred["classification_report"])
+      msg += "\n"
+      if len(test_pred.keys()) > 0:
+        msg += "========\t\t Test Data Classification Details Recap \t\t========\n\n"
+        msg += "Predict time: {}\n".format(construct_time(test_pred["predict_time"]))
+        msg += "Score: {}\n".format(test_pred["score"])
+        msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
+        msg += "\nConfusion matrix:\n{}\n".format(test_pred["confusion_matrix"])
+        msg += "\nClassification report:\n{}\n".format(test_pred["classification_report"])
+        msg += "\n"
       f.write(msg)
     dump_config(os.path.join(self.directory_path, "config.yaml"), self.config)
     print("Log and Model Successfully Saved to {}\n".format(self.directory_path))
@@ -97,7 +140,7 @@ def main(config):
   print("========\t\t Trainer is Fitting \t\t========")
   trainer.fit()
   print("========\t\t Trainer is Evaluating \t\t========")
-  trainer.evaluate()
+  res = trainer.evaluate()
   print("========\t\t Trainer is Wrapping Up \t\t========")
-  trainer.save()
+  trainer.save(res)
   print("🚀🚀🚀🚀🚀🚀\t\t Trainer Flow Completed! \t\t🚀🚀🚀🚀🚀🚀")

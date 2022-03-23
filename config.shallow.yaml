@@ -4,6 +4,7 @@ master:
   description: This is model description
   train_key: train
   dev_key: dev
+  test_key: test
   save_path: 'D:\WorkBench\TA NLP\res'
   label_key: Label
   labels: Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm

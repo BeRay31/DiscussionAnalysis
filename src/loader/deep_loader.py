@@ -127,9 +127,10 @@ class DeepLoader:
       "y_train": y_train,
       "y_dev": y_dev,
       "y_test": y_test,
-      "train": train,
       "merged": merged,
-      "dev": dev
+      "train": train,
+      "dev": dev,
+      "test": test
     }
 
     return res
