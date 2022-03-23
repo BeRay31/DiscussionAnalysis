@@ -52,16 +52,17 @@ class DeepLoader:
     labels = self.config["labels"].split("_")
     arr = []
     for label in labels:
-      if label == val:
+      if label.lower() == val.lower():
         arr.append(1)
       else:
         arr.append(0)
+    return arr
 
-  def one_hot_df(self, df: pd.DataFrame):
+  def one_hot_df(self, items):
     arr = []
-    for index, row in df.iterrows():
+    for item in items:
       arr.append(
-        self.one_hot_encoding_based_on_labels(row[self.config["label_key"]])
+        self.one_hot_encoding_based_on_labels(item)
       )
     return arr
 
@@ -71,19 +72,27 @@ class DeepLoader:
     merged = self.merged_data
     test = self.test
     if sample:
-      train = train.sample(5)
-      dev = dev.sample(5)
-      merged = merged.sample(5)
+      train = train.sample(3)
+      dev = dev.sample(3)
+      merged = merged.sample(3)
       if not test.empty:
-        test = test.sample(5)
+        test = test.sample(3)
     
     train = train.reset_index(drop=True)
     dev = dev.reset_index(drop=True)
     merged = merged.reset_index(drop=True)
     test = test.reset_index(drop=True)
 
-    y_train = np.array(self.one_hot_df(train[self.config["label_key"]]))
-    y_dev = np.array(self.one_hot_df(dev[self.config["label_key"]]))
+    y_train = np.array(
+      self.one_hot_df(
+        train[self.config["label_key"]].tolist()
+      )
+    )
+    y_dev = np.array(
+      self.one_hot_df(
+        dev[self.config["label_key"]].tolist()
+      )
+    )
     y_test = np.array([])
     
     key_list = self.config["key_list"].split("_")
@@ -94,28 +103,32 @@ class DeepLoader:
     else:
       x_train = dict(
         self.tokenizer(
-          list(self.train[key_list[0]]),
-          list(self.train[key_list[1]]),
+          list(train[key_list[0]]),
+          list(train[key_list[1]]),
           **self.config["tokenizer_config"]
         )
       )
       x_dev = dict(
         self.tokenizer(
-          list(self.dev[key_list[0]]),
-          list(self.dev[key_list[1]]),
+          list(dev[key_list[0]]),
+          list(dev[key_list[1]]),
           **self.config["tokenizer_config"]
         )
       )
     
     if not self.test.empty:
-      y_test = np.array(self.one_hot_df(test[self.config["label_key"]]))
+      y_test = np.array(
+        self.one_hot_df(
+          test[self.config["label_key"]].tolist()
+        )
+      )
       if self.config["tokenizer_type"] in WORD_VECTORS:
         x_test = self.tokenizer.df_to_vector(test)
       else:
         x_test = dict(
           self.tokenizer(
-            list(self.test[key_list[0]]),
-            list(self.test[key_list[1]]),
+            list(test[key_list[0]]),
+            list(test[key_list[1]]),
             **self.config["tokenizer_config"]
           )
         )

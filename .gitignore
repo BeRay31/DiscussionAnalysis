@@ -2,5 +2,6 @@
 /dataset_splitted
 __pycache__
 /res
+/res_deep
 /pretrained_models/fasttext
 /pretrained_models/w2v

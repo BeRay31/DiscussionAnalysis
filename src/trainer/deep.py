@@ -15,12 +15,12 @@ from datetime import datetime
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from scipy.stats import pearsonr, spearmanr
 
-from keras.callbacks import (
+from tensorflow.keras.callbacks import (
   ModelCheckpoint,
   LearningRateScheduler,
 )
-from keras.losses import CategoricalCrossentropy
-from keras.optimizers import Adam
+from tensorflow.keras.losses import CategoricalCrossentropy
+from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import confusion_matrix, classification_report
 
 

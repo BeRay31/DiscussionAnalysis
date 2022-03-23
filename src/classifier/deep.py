@@ -2,8 +2,8 @@ import tensorflow as tf
 from transformers import TFBertModel, XLNetModel
 
 tf.random.set_seed(13518136)
-from keras import Model
-from keras.layers import (
+from tensorflow.keras import Model
+from tensorflow.keras.layers import (
     Dense,
     LSTM,
     GRU,
@@ -24,13 +24,13 @@ class DeepClassifier(Model):
     
     # Define Recurrent Layer
     if self.config["recurrent_layer"].lower() == "lstm":
-      self.recurrent = LSTM(self.config["recurrent_config"])
+      self.recurrent = LSTM(self.config["recurrent_unit"])
     elif self.config["recurrent_layer"].lower() == "bilstm":
-      self.recurrent = Bidirectional(LSTM(self.config["recurrent_config"]))
+      self.recurrent = Bidirectional(LSTM(self.config["recurrent_unit"]))
     elif self.config["recurrent_layer"].lower() == "gru":
-      self.recurrent = GRU(self.config["recurrent_config"])
+      self.recurrent = GRU(self.config["recurrent_unit"])
     elif self.config["recurrent_layer"].lower() == "bigru":
-      self.recurrent = Bidirectional(GRU(self.config["recurrent_config"]))
+      self.recurrent = Bidirectional(GRU(self.config["recurrent_unit"]))
     else:
       self.recurrent = None
       raise ValueError("only support (lstm | bilstm | gru | bigru) layer type")
@@ -40,16 +40,15 @@ class DeepClassifier(Model):
     labels = self.config["labels"].split("_")
     
     # Define Output Layer
-    self.output = Dense(len(labels), activation="softmax", name="classifier")
+    self.out = Dense(len(labels), activation="softmax", name="classifier")
   
   def call(self, X, training=None):
-
     if not self.config["type"] in WORD_VECTORS:
       # Pass to BERT or XLNet Model
       X_embed = self.embedder(X)["last_hidden_state"]
     else:
       X_embed = X
-
+    
     # Passed to recurrent layer
     X_recurrent = X_embed
     if self.recurrent != None:
@@ -59,7 +58,7 @@ class DeepClassifier(Model):
     X_ = self.dropout(X_recurrent, training=training)
     
     # Final Dense layer
-    res = self.output(X_)
+    res = self.out(X_)
 
     return res
     
