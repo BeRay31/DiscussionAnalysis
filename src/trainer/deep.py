@@ -3,6 +3,8 @@ from src.loader import DeepLoader
 from src.trainer import Trainer
 from src.classifier import DeepClassifier
 from src.util import get_latest_version
+from src.callback import CustomSaver
+
 import tensorflow as tf
 import os
 import numpy as np
@@ -16,12 +18,11 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from scipy.stats import pearsonr, spearmanr
 
 from tensorflow.keras.callbacks import (
-  ModelCheckpoint,
-  LearningRateScheduler,
+  LearningRateScheduler
 )
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 
 
 def scheduler(epoch, lr):
@@ -43,15 +44,6 @@ class DeepTrainer(Trainer):
     labels = self.config["master"]["labels"].split("_")
     idx = np.argmax(arr)
     return labels[idx]
-
-  def evalMetrics(self, y_true, y_pred):
-    return {
-      "pearson": pearsonr(y_true, y_pred)[0],
-      "spearman": spearmanr(y_true, y_pred)[0],
-      "mae": mean_absolute_error(y_true, y_pred),
-      "mse": mean_squared_error(y_true, y_pred),
-      "r2": r2_score(y_true, y_pred),
-    }
 
   def fit(self):
     # mkdir for models
@@ -83,11 +75,7 @@ class DeepTrainer(Trainer):
       # Define train callbacks
       callbacks = [
         LearningRateScheduler(scheduler),
-        ModelCheckpoint(
-          filepath=os.path.join(self.models_path, 
-          f"{get_latest_version(self.models_path, 'model_epoch-', suffix='dlw')}"),
-          save_weights_only=True
-        )
+        CustomSaver(self.models_path)
       ]
 
       start = time()
@@ -120,8 +108,6 @@ class DeepTrainer(Trainer):
         verbose=1,
       )
       end = time()
-      pred_train = pd.DataFrame([pred_train], columns=["Prediction"])
-      pred_train = pred_train.reset_index(drop=True)
       train_pred_time = round(end - start, 2)
 
       start = end
@@ -131,11 +117,10 @@ class DeepTrainer(Trainer):
         verbose=1,
       )
       end = time()
-      pred_dev = pd.DataFrame([pred_dev], columns=["Prediction"])
-      pred_dev = pred_dev.reset_index(drop=True)
       dev_pred_time = round(end - start, 2)
 
       test_pred_time = None
+      pred_test = np.asarray([])
       if not self.data["test"].empty:
         start = end
         pred_test = self.model.predict(
@@ -144,47 +129,25 @@ class DeepTrainer(Trainer):
           verbose=1
         )
         end = time()
-        pred_test = pd.DataFrame([pred_test], columns=["Prediction"])
-        pred_test = pred_test.reset_index(drop=True)
         test_pred_time = round(end - start, 2)
 
-      df_train = pd.concat([self.data["train"], pred_train], axis = 1)
-      df_dev = pd.concat([self.data["dev"], pred_dev], axis = 1)
-      df_test = pd.DataFrame([])
+      self.save(pred_train, pred_dev, pred_test, train_pred_time, dev_pred_time, test_pred_time, model_weight)
 
-      if not self.data["test"].empty:
-        df_test = pd.concat([self.data["test"], pred_test], axis = 1)
-
-      self.save(df_train, df_dev, df_test, train_pred_time, dev_pred_time, test_pred_time, model_weight)
-
-  def save(self, df_train: pd.DataFrame, df_dev: pd.DataFrame, df_test: pd.DataFrame, train_pred_time, dev_pred_time, test_pred_time, model_name):
+  def save(self, y_train_pred: np.array, y_dev_pred: np.array, y_test_pred: np.array, train_pred_time, dev_pred_time, test_pred_time, model_name):
+    train_key = self.config["master"]["train_key"]
+    dev_key = self.config["master"]["dev_key"]
+    test_key = self.config["master"]["test_key"]
     # Prepare Folder
     model_names = model_name.split(".")
     model_name = ".".join(model_names[:len(model_names) - 1])
     save_path = os.path.join(self.eval_path, model_name)
-    os.makedirs(save_path)
+    os.makedirs(save_path) 
 
     labels = self.config["master"]["labels"].split("_")
-    # Eval Metrics
-    train_eval_metrics = self.evalMetrics(
-      y_pred=df_train["Prediction"].values,
-      y_true=self.data["y_train"]
-    )
-    
-    dev_eval_metrics = self.evalMetrics(
-      y_pred=df_dev["Prediction"].values,
-      y_true=self.data["y_dev"]
-    )
-
-    test_eval_metrics = {}
-    if not df_test.empty:
-      test_eval_metrics = self.evalMetrics(
-        y_pred=df_test["Prediction"].values,
-        y_true=self.data["y_test"]
-      )
-    
     # Save CSV
-    df_train["Prediction"] = df_train["Prediction"].apply(lambda x: self.get_label(x))
+    train_prediction = [self.get_label(arr) for arr in y_train_pred]
+    train_prediction = pd.DataFrame(train_prediction, columns=["Prediction"])
+    df_train = pd.concat([self.data[train_key], train_prediction], axis = 1)
     train_confusion_matrix = confusion_matrix(
       y_true=df_train[self.config["master"]["label_key"]],
       y_pred=df_train["Prediction"],
@@ -195,8 +158,14 @@ class DeepTrainer(Trainer):
       y_pred=df_train["Prediction"],
       labels=labels
     )
+    train_accuracy_score = accuracy_score(
+      y_true=df_train[self.config["master"]["label_key"]],
+      y_pred=df_train["Prediction"]
+    )
 
-    df_dev["Prediction"] = df_dev["Prediction"].apply(lambda x: self.get_label(x))
+    dev_prediction = [self.get_label(arr) for arr in y_dev_pred]
+    dev_prediction = pd.DataFrame(dev_prediction, columns=["Prediction"])
+    df_dev = pd.concat([self.data[dev_key], dev_prediction], axis = 1)
     dev_confusion_matrix = confusion_matrix(
       y_true=df_dev[self.config["master"]["label_key"]],
       y_pred=df_dev["Prediction"],
@@ -207,12 +176,24 @@ class DeepTrainer(Trainer):
       y_pred=df_dev["Prediction"],
       labels=labels
     )
+    dev_accuracy_score = accuracy_score(
+      y_true=df_dev[self.config["master"]["label_key"]],
+      y_pred=df_dev["Prediction"]
+    )
 
+    # Save to CSV
     df_train.to_csv(os.path.join(save_path, "pred_train.csv"), index=False)
     df_dev.to_csv(os.path.join(save_path, "pred_dev.csv"), index=False)
-    if not df_test.empty:
-      df_test["Prediction"] = df_test["Prediction"].apply(lambda x: self.get_label(x))
+
+    test_confusion_matrix = None
+    test_classification_report = None
+    test_accuracy_score = None
+    if not self.data[test_key].empty:
+      test_prediction = [self.get_label(arr) for arr in y_test_pred]
+      test_prediction = pd.DataFrame(test_prediction, columns=["Prediction"])
+      df_test = pd.concat([self.data[test_key], test_prediction], axis = 1)
       df_test.to_csv(os.path.join(save_path, "pred_test.csv"), index=False)
+
       test_confusion_matrix = confusion_matrix(
         y_true=df_test[self.config["master"]["label_key"]],
         y_pred=df_test["Prediction"],
@@ -222,6 +203,10 @@ class DeepTrainer(Trainer):
         y_true=df_test[self.config["master"]["label_key"]],
         y_pred=df_test["Prediction"],
         labels=labels
+      )
+      test_accuracy_score = accuracy_score(
+        y_true=df_test[self.config["master"]["label_key"]],
+        y_pred=df_test["Prediction"]
       )
 
     # Log Result
@@ -257,16 +242,22 @@ class DeepTrainer(Trainer):
       msg += "Predict test data time: {}\n".format(construct_time(test_pred_time))
       msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
       msg += "\n"
-      msg += "========\t\t Prediction Metrics Details Recap \t\t========\n\n"
-      msg += "Train\n{}\n\n".format(write_dict(train_eval_metrics))
+      msg += "========\t\t Training Prediction Metrics Details Recap \t\t========\n\n"
+      msg += "\nAccuracy:\n{}\n".format(train_accuracy_score)
       msg += "\nConfusion matrix:\n{}\n".format(train_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(train_classification_report)
-      msg += "Dev\n{}\n\n".format(write_dict(dev_eval_metrics))
+      msg += "\n"
+      msg += "========\t\t Dev Prediction Metrics Details Recap \t\t========\n\n"
+      msg += "\nAccuracy:\n{}\n".format(dev_accuracy_score)
       msg += "\nConfusion matrix:\n{}\n".format(dev_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(dev_classification_report)
-      msg += "Test\n{}\n\n".format(write_dict(test_eval_metrics))
+      msg += "\n"
+      msg += "========\t\t test Prediction Metrics Details Recap \t\t========\n\n"
+      msg += "\nAccuracy:\n{}\n".format(test_accuracy_score)
+      msg += "\nConfusion matrix:\n{}\n".format(test_confusion_matrix)
       msg += "\nConfusion matrix:\n{}\n".format(test_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(test_classification_report)
+      msg += "\n"
       f.write(msg)
     dump_config(os.path.join(save_path, "config.yaml"), self.config)
     print("Log and Model Successfully Saved to {}\n".format(save_path))
