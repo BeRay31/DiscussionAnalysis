@@ -98,8 +98,8 @@ class DeepLoader:
     key_list = self.config["key_list"].split("_")
     x_train, x_dev, x_test = {}, {}, {}
     if self.config["tokenizer_type"] in WORD_VECTORS:
-      x_train = self.tokenizer.df_to_vector(train)
-      x_dev = self.tokenizer.df_to_vector(dev)
+      x_train = self.tokenizer.df_to_vector(train, False)
+      x_dev = self.tokenizer.df_to_vector(dev, False)
     else:
       x_train = dict(
         self.tokenizer(
@@ -123,7 +123,7 @@ class DeepLoader:
         )
       )
       if self.config["tokenizer_type"] in WORD_VECTORS:
-        x_test = self.tokenizer.df_to_vector(test)
+        x_test = self.tokenizer.df_to_vector(test, False)
       else:
         x_test = dict(
           self.tokenizer(

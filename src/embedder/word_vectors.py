@@ -34,7 +34,7 @@ class WordVectorsEmbedder:
         self.oov_log.append(word)
     return word_vector
 
-  def text_to_vectors(self, text):
+  def text_to_vectors(self, text, flatten = True):
     if not bool(self.model):
       raise ValueError("There is no model loaded")
     tokens = word_tokenize(text)
@@ -47,18 +47,19 @@ class WordVectorsEmbedder:
     pad = self.config["max_sequence"] - len(vector)
     for i in range(pad):
       vector.append(self.padding)
-    
-    final_vector = np.asarray(vector).flatten() 
-    return final_vector
+    if flatten:
+      return np.asarray(vector).flatten()
+    else:
+      return np.asarray(vector)
 
-  def df_to_vector(self, df):
+  def df_to_vector(self, df, flatten = True):
     key_list = self.config["key_list"].split("_")
     vector = []
     is_concat = self.config["model_behavior"] == "concat"
     for idx, row in df.iterrows():
       vector_temp = []
       for key in key_list:
-        temp = self.text_to_vectors(row[key])
+        temp = self.text_to_vectors(row[key], flatten)
         if is_concat:
           temp = temp.tolist()
         if len(vector_temp) == 0:
