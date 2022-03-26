@@ -1,5 +1,6 @@
 import argparse
 import os
+import tqdm
 
 def runner(args):
   main_file = args.main_path
@@ -10,12 +11,13 @@ def runner(args):
   configs = [config for config in os.listdir(configs_dir)]
   configs.sort()
   print(f"Training {run_type} with config path {configs_dir} started!")
-  for config_name in configs:
+  for config_name in tqdm.tqdm(configs):
+    print(f"Training with config {config_name} started")
     config_path = os.path.join(configs_dir, config_name)
     config_name_split = config_name.split(".")
     output_dir = os.path.join(log_path, f"{'.'.join(config_name_split[:len(config_name_split) - 1])}.txt")
     os.system(f'{python_type} "{main_file}" --config "{config_path}" --run_type "{run_type}" > "{output_dir}"')
-    print(f"Training with config {config_name} complete")
+    print(f"Training with config {config_name} has completed")
   print(f"Training process completed!!")
 
 def parse_arguments():
