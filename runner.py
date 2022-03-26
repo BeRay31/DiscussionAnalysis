@@ -17,7 +17,6 @@ def runner(args):
     config_name_split = config_name.split(".")
     output_dir = os.path.join(log_path, f"{'.'.join(config_name_split[:len(config_name_split) - 1])}.txt")
     os.system(f'{python_type} "{main_file}" --config "{config_path}" --run_type "{run_type}" > "{output_dir}"')
-    print(f"Training with config {config_name} has completed")
   print(f"Training process completed!!")
 
 def parse_arguments():
