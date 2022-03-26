@@ -167,4 +167,4 @@ def main(config):
   res = trainer.evaluate()
   print("========\t\t Trainer is Wrapping Up \t\t========")
   trainer.save(res)
-  print("🚀🚀🚀🚀🚀🚀\t\t Trainer Flow Completed! \t\t🚀🚀🚀🚀🚀🚀")
+  print("========\t\t Trainer Flow Completed! \t\t========")

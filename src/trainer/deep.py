@@ -295,4 +295,4 @@ def main(config):
   print("========\t\t Trainer is evaluating \t\t========")
   trainer.evaluate()
   print("========\t\t Trainer is Wrapping Up \t\t========")
-  print("🚀🚀🚀🚀🚀🚀\t\t Trainer Flow Completed! \t\t🚀🚀🚀🚀🚀🚀")
+  print("========\t\t Trainer Flow Completed! \t\t========")
