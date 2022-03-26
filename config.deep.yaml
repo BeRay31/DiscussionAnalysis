@@ -1,5 +1,5 @@
 master:
-  prefix: deep_word2vec_test # bert | xlnet | word2vec | fasttext
+  prefix: deep_bert_test # bert | xlnet | word2vec | fasttext
   release_mode: patch
   description: test # This is model description
   train_key: train
@@ -13,7 +13,7 @@ master:
 loader:
   data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_normal # path to data
   test_data_path: 'D:\WorkBench\TA NLP\dataset_splitted\test.csv'
-  tokenizer_type: word2vec # bert | xlnet | word2vec | fasttext
+  tokenizer_type: bert # bert | xlnet | word2vec | fasttext
   model_name: indobenchmark/indobert-base-p2 # indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
   tokenizer_config:
     max_length: 512
@@ -21,15 +21,15 @@ loader:
     return_tensors: tf
     truncation: true
     # for word vectors
-    model_type: word2vec # word2vec | fasttext
-    is_pretrained: true
-    model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model #path to model
-    log_oov: false
-    vector_size: 100 
-    max_sequence: 256 # max_length/2
-    model_behavior: concat # concat | combine
+    # model_type: word2vec # word2vec | fasttext
+    # is_pretrained: true
+    # model_path: D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model #path to model
+    # log_oov: false
+    # vector_size: 100 
+    # max_sequence: 256 # max_length/2
+    # model_behavior: concat # concat | combine
 classifier:
-  type: word2vec # bert | xlnet | word2vec | fasttext
+  type: bert # bert | xlnet | word2vec | fasttext
   model_name: indobenchmark/indobert-base-p2 # indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
   recurrent_layer: lstm # lstm | bilstm | gru | bigru
   recurrent_unit: 64

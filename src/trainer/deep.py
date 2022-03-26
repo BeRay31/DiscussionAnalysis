@@ -51,45 +51,45 @@ class DeepTrainer(Trainer):
     os.mkdir(self.models_path)
 
     # Set GPU
-    gpus = tf.config.experimental.list_physical_devices("GPU")
-    gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
-    config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
-    taken_gpu = []
-    for i, gpu_name in enumerate(gpu_names):
-        if i in config_taken:
-            taken_gpu.append(gpu_name)
-    print(f"Taken GPU: {taken_gpu}")
-    strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
+    # gpus = tf.config.experimental.list_physical_devices("GPU")
+    # gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
+    # config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
+    # taken_gpu = []
+    # for i, gpu_name in enumerate(gpu_names):
+    #     if i in config_taken:
+    #         taken_gpu.append(gpu_name)
+    # print(f"Taken GPU: {taken_gpu}")
+    # strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
 
-    with strategy.scope():
-      self.model = DeepClassifier(
-        {**self.config["master"], **self.config["classifier"]}
-      )
+    # with strategy.scope():
+    self.model = DeepClassifier(
+      {**self.config["master"], **self.config["classifier"]}
+    )
 
-      # Compile model
-      self.model.compile(
-        loss=CategoricalCrossentropy(),
-        optimizer=Adam(learning_rate=self.config["trainer"]["learning_rate"]),
-      )
+    # Compile model
+    self.model.compile(
+      loss=CategoricalCrossentropy(),
+      optimizer=Adam(learning_rate=self.config["trainer"]["learning_rate"]),
+    )
 
-      # Define train callbacks
-      callbacks = [
-        LearningRateScheduler(scheduler),
-        CustomSaver(self.models_path)
-      ]
+    # Define train callbacks
+    callbacks = [
+      LearningRateScheduler(scheduler),
+      CustomSaver(self.models_path)
+    ]
 
-      start = time()
-      # Fit Model
-      self.model.fit(
-        self.data["x_train"],
-        self.data["y_train"],
-        batch_size=self.config["trainer"]["batch_size"],
-        epochs=self.config["trainer"]["epochs"],
-        validation_data=(self.data["x_dev"], self.data["y_dev"]),
-        callbacks=callbacks,
-      )
-      end = time()
-      self.overall_time_train = round(end - start, 2)
+    start = time()
+    # Fit Model
+    self.model.fit(
+      self.data["x_train"],
+      self.data["y_train"],
+      batch_size=self.config["trainer"]["batch_size"],
+      epochs=self.config["trainer"]["epochs"],
+      validation_data=(self.data["x_dev"], self.data["y_dev"]),
+      callbacks=callbacks,
+    )
+    end = time()
+    self.overall_time_train = round(end - start, 2)
 
   def evaluate(self):
     # prepare dir for evaluation
@@ -137,6 +137,7 @@ class DeepTrainer(Trainer):
     train_key = self.config["master"]["train_key"]
     dev_key = self.config["master"]["dev_key"]
     test_key = self.config["master"]["test_key"]
+    label_key = self.config["master"]["label_key"]
     # Prepare Folder
     model_names = model_name.split(".")
     model_name = ".".join(model_names[:len(model_names) - 1])
@@ -209,12 +210,37 @@ class DeepTrainer(Trainer):
         y_pred=df_test["Prediction"]
       )
 
+    # Data distribution
+    train_data_distribution = self.data[train_key][f"{label_key}"].value_counts()
+    dev_data_distribution = self.data[dev_key][f"{label_key}"].value_counts()
+    test_data_distribution = None
+    if not self.data[test_key].empty:
+      test_data_distribution = self.data[test_key][f"{label_key}"].value_counts()
+
     # Log Result
     with open(os.path.join(save_path, "log.txt"), "w+") as f:
       msg = "Experiment datetime: {}\n".format(datetime.now())
       msg += "Experiment prefix: {}\n".format(self.config["master"]["prefix"])
       msg += "Experiment description: {}\n".format(self.config["master"]["description"])
-      msg += "Data Path: {}\n".format(self.config["loader"]["data_path"])
+      msg += "Data path: {}\n".format(self.config["loader"]["data_path"])
+      msg += "\n"
+      msg += "========\t\t Data Train Details \t\t========\n"
+      msg += "\n"
+      msg += "Data train length: {}\n".format(len(self.data[train_key]))
+      msg += "Data train distributions: \n{}\n".format(train_data_distribution)
+      msg += "\n"
+      msg += "========\t\t Data Dev Details \t\t========\n"
+      msg += "\n"
+      msg += "Data dev length: {}\n".format(len(self.data[dev_key]))
+      msg += "Data dev distributions: \n{}\n".format(dev_data_distribution)
+      msg += "\n"
+      msg += "========\t\t Data Test Details \t\t========\n"
+      msg += "\n"
+      msg += "Data test length: {}\n".format(len(self.data[test_key]))
+      msg += "Data test distributions: \n{}\n".format(test_data_distribution)
+      msg += "\n"
+      msg += "\n"
+      msg += "========\t\t Trainer Details \t\t========\n"
       msg += "Is sampling enabled: {}\n".format(self.config["master"]["sampling"])
       msg += "Training batch size: {}\n".format(self.config["trainer"]["batch_size"])
       msg += "Training learning rate: {}\n".format(self.config["trainer"]["learning_rate"])

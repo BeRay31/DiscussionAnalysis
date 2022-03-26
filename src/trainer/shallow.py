@@ -53,6 +53,7 @@ class ShallowTrainer(Trainer):
     train_key = self.config["master"]["train_key"]
     dev_key = self.config["master"]["dev_key"]
     test_key = self.config["master"]["test_key"]
+    label_key = self.config["master"]["label_key"]
 
     # Save Classifier (Model + Decomposer)
     save_model_with_pickle(self.classifier.model, os.path.join(self.directory_path, "classifier.model"))
@@ -71,12 +72,35 @@ class ShallowTrainer(Trainer):
     if len(test_pred.keys()) > 0:
       test_pred["prediction"].to_csv(os.path.join(self.directory_path, "test_pred.csv"), index=False)
     
+    # Data distribution
+    train_data_distribution = self.data[train_key][f"{label_key}"].value_counts()
+    dev_data_distribution = self.data[dev_key][f"{label_key}"].value_counts()
+    test_data_distribution = None
+    if not self.data[test_key].empty:
+      test_data_distribution = self.data[test_key][f"{label_key}"].value_counts()
+
     # Log Result
     with open(os.path.join(self.directory_path, "log.txt"), "w+") as f:
       msg = "Experiment datetime: {}\n".format(datetime.now())
       msg += "Experiment prefix: {}\n".format(self.config["master"]["prefix"])
       msg += "Experiment description: {}\n".format(self.config["master"]["description"])
-      msg += "Data Path: {}\n".format(self.config["loader"]["data_path"])
+      msg += "Data path: {}\n".format(self.config["loader"]["data_path"])
+      msg += "\n"
+      msg += "========\t\t Data Train Details \t\t========\n"
+      msg += "\n"
+      msg += "Data train length: {}\n".format(len(self.data[train_key]))
+      msg += "Data train distributions: \n{}\n".format(train_data_distribution)
+      msg += "\n"
+      msg += "========\t\t Data Dev Details \t\t========\n"
+      msg += "\n"
+      msg += "Data dev length: {}\n".format(len(self.data[dev_key]))
+      msg += "Data dev distributions: \n{}\n".format(dev_data_distribution)
+      msg += "\n"
+      msg += "========\t\t Data Test Details \t\t========\n"
+      msg += "\n"
+      msg += "Data test length: {}\n".format(len(self.data[test_key]))
+      msg += "Data test distributions: \n{}\n".format(test_data_distribution)
+      msg += "\n"
       msg += "\n"
       msg += "========\t\t Embedder Details \t\t========\n\n"
       msg += "Embedding path: {}\n".format(self.config["embedder"]["model_path"])
