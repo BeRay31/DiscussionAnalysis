@@ -1,5 +1,5 @@
 import tensorflow as tf
-from transformers import TFBertModel, TFRobertaModel
+from transformers import TFBertModel, TFXLMRobertaModel
 
 tf.random.set_seed(13518136)
 from tensorflow.keras import Model
@@ -20,7 +20,7 @@ class DeepClassifier(Model):
     if self.config["type"] == "bert":
       self.embedder = TFBertModel.from_pretrained(config["model_name"])
     elif config["type"].lower() == "roberta":
-      self.embedder = TFRobertaModel.from_pretrained(config["model_name"])
+      self.embedder = TFXLMRobertaModel.from_pretrained(config["model_name"])
     
     # Define Recurrent Layer
     if self.config["recurrent_layer"].lower() == "lstm":

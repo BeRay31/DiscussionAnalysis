@@ -12,9 +12,8 @@ master:
   key_list: Tweet_Comment
 loader:
   data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_normal # path to data
-  test_data_path: 'D:\WorkBench\TA NLP\dataset_splitted\test.csv'
-  tokenizer_type: deep_bert_test # bert | roberta | bert-tweet | word2vec | fasttext
-  model_name: icardiffnlp/twitter-xlm-roberta-base # indobenchmark/indobert-base-p2 | icardiffnlp/twitter-xlm-roberta-base | indolem/indobertweet-base-uncased
+  tokenizer_type: roberta # bert | roberta | bert-tweet | word2vec | fasttext
+  model_name: cardiffnlp/twitter-xlm-roberta-base # indobenchmark/indobert-base-p2 | cardiffnlp/twitter-xlm-roberta-base | indolem/indobertweet-base-uncased
   tokenizer_config:
     max_length: 512
     padding: max_length
@@ -29,8 +28,8 @@ loader:
     # max_sequence: 256 # max_length/2
     # model_behavior: concat # concat | combine
 classifier:
-  type: deep_bert_test # bert | roberta | bert-tweet | word2vec | fasttext
-  model_name: cardiffnlp/twitter-xlm-roberta-base # indobenchmark/indobert-base-p2 | icardiffnlp/twitter-xlm-roberta-base | indolem/indobertweet-base-uncased
+  type: roberta # bert | roberta | bert-tweet | word2vec | fasttext
+  model_name: cardiffnlp/twitter-xlm-roberta-base # indobenchmark/indobert-base-p2 | cardiffnlp/twitter-xlm-roberta-base | indolem/indobertweet-base-uncased
   recurrent_layer: lstm # lstm | bilstm | gru | bigru
   recurrent_unit: 64
   recurrent_dropout: 0.4
