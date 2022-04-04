@@ -7,10 +7,13 @@ class ShallowLoader:
     data_path = self.config["data_path"]
     self.train = pd.read_csv(os.path.join(data_path, "train.csv")).reset_index(drop=True)
     self.dev = pd.read_csv(os.path.join(data_path, "dev.csv")).reset_index(drop=True)
-    if os.path.isfile(self.config["test_data_path"]):
-      self.test = pd.read_csv(self.config["test_data_path"]).reset_index(drop=True)
     self.merged_data = pd.concat([self.train, self.dev])
     print(f"train and dev dataset from {data_path} loaded!")
+    
+    self.test = pd.DataFrame([])
+    if os.path.isfile(os.path.join(data_path, "test.csv")):
+      self.test = pd.read_csv(os.path.join(data_path, "test.csv")).reset_index(drop=True)
+      print(f"testdataset from {data_path} loaded!")
 
   def __drop_null(self):
     self.train.dropna(inplace=True)
@@ -22,7 +25,7 @@ class ShallowLoader:
       self.dev.drop(columns=self.dev.columns[0], axis=1, inplace=True)
     if len(self.merged_data.columns.tolist()) > 5:
       self.merged_data.drop(columns=self.merged_data.columns[0], axis=1, inplace=True)
-    if os.path.isfile(self.config["test_data_path"]):
+    if not self.test.empty:
       self.test.dropna(inplace=True)
       if len(self.test.columns.tolist()) > 5:
         self.test.drop(columns=self.test.columns[0], axis=1, inplace=True)
