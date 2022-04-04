@@ -1,2 +1,2 @@
 cd .\tools
-python .\split_dataset.py --data_path "D:\WorkBench\TA NLP\datasets\rey\dataset_preprocessed.csv" --save_path "D:\WorkBench\TA NLP\dataset_splitted" --prefix "rey" --is_sampling_enabled True --test_size 0.33 --clean_null True
+python .\split_dataset.py --data_path "D:\WorkBench\TA NLP\datasets\rey\dataset_preprocessed.csv" --save_path "D:\WorkBench\TA NLP\dataset_splitted" --prefix "rey" --is_sampling_enabled True --test_size 0.18 --clean_null True
