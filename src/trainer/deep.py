@@ -38,6 +38,17 @@ class DeepTrainer(Trainer):
     self.models_path = None
     self.eval_path = None
     self.overall_time_train = None
+    self.strategy = None
+    # Set GPU
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
+    config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
+    taken_gpu = []
+    for i, gpu_name in enumerate(gpu_names):
+        if i in config_taken:
+            taken_gpu.append(gpu_name)
+    print(f"Taken GPU: {taken_gpu}")
+    self.strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
 
   # Convert arr to label
   def get_label(self, arr):
@@ -50,19 +61,7 @@ class DeepTrainer(Trainer):
     self.models_path = os.path.join(self.directory_path, "models")
     os.mkdir(self.models_path)
 
-    # Set GPU
-    # gpus = tf.config.experimental.list_physical_devices("GPU")
-    # gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
-    # config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
-    # taken_gpu = []
-    # for i, gpu_name in enumerate(gpu_names):
-    #     if i in config_taken:
-    #         taken_gpu.append(gpu_name)
-    # print(f"Taken GPU: {taken_gpu}")
-    # strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
-
-    # with strategy.scope():
-    with tf.device("GPU:7"):
+    with self.strategy.scope():
       self.model = DeepClassifier(
         {**self.config["master"], **self.config["classifier"]}
       )
@@ -101,7 +100,8 @@ class DeepTrainer(Trainer):
     for model_weight in model_weights:
       # Load best model
       self.model.load_weights(os.path.join(self.models_path, model_weight))
-      with tf.device("GPU:7"):
+      
+      with self.strategy.scope():
         start = time()
         pred_train = self.model.predict(
           self.data["x_train"],
