@@ -1,5 +1,5 @@
 master:
-  prefix: deep_bert_test # bert | xlnet | word2vec | fasttext
+  prefix: deep_bert_test # bert | roberta | bert-tweet | word2vec | fasttext
   release_mode: patch
   description: test # This is model description
   train_key: train
@@ -13,8 +13,8 @@ master:
 loader:
   data_path: D:\WorkBench\TA NLP\dataset_splitted\rey_normal # path to data
   test_data_path: 'D:\WorkBench\TA NLP\dataset_splitted\test.csv'
-  tokenizer_type: bert # bert | xlnet | word2vec | fasttext
-  model_name: indobenchmark/indobert-base-p2 # indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
+  tokenizer_type: deep_bert_test # bert | roberta | bert-tweet | word2vec | fasttext
+  model_name: icardiffnlp/twitter-xlm-roberta-base # indobenchmark/indobert-base-p2 | icardiffnlp/twitter-xlm-roberta-base | indolem/indobertweet-base-uncased
   tokenizer_config:
     max_length: 512
     padding: max_length
@@ -29,8 +29,8 @@ loader:
     # max_sequence: 256 # max_length/2
     # model_behavior: concat # concat | combine
 classifier:
-  type: bert # bert | xlnet | word2vec | fasttext
-  model_name: indobenchmark/indobert-base-p2 # indobenchmark/indobert-base-p2 | malay-huggingface/xlnet-tiny-bahasa-cased
+  type: deep_bert_test # bert | roberta | bert-tweet | word2vec | fasttext
+  model_name: cardiffnlp/twitter-xlm-roberta-base # indobenchmark/indobert-base-p2 | icardiffnlp/twitter-xlm-roberta-base | indolem/indobertweet-base-uncased
   recurrent_layer: lstm # lstm | bilstm | gru | bigru
   recurrent_unit: 64
   recurrent_dropout: 0.4

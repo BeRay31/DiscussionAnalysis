@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from src.embedder import WordVectorsEmbedder
-from transformers import BertTokenizer, XLNetTokenizer
+from transformers import BertTokenizer, RobertaTokenizer
 
 WORD_VECTORS = ["word2vec", "fasttext"]
 class DeepLoader:
@@ -11,8 +11,8 @@ class DeepLoader:
 
     if self.config["tokenizer_type"] == "bert":
       self.tokenizer = BertTokenizer.from_pretrained(self.config["model_name"])
-    elif self.config["tokenizer_type"] == "xlnet":
-      self.tokenizer = XLNetTokenizer.from_pretrained(self.config["model_name"])
+    elif self.config["tokenizer_type"] == "roberta":
+      self.tokenizer = RobertaTokenizer.from_pretrained(self.config["model_name"])
     elif self.config["tokenizer_type"] in WORD_VECTORS:
       self.tokenizer = WordVectorsEmbedder(
         {

@@ -1,7 +1,7 @@
 import preprocessor as tp
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from tqdm import tqdm
-import pandas as pd
+import string
 import re
 import os
 
@@ -9,16 +9,27 @@ class DataPreprocessor:
   def __init__(self, dataFrame, save_path, stem = False):
     self.dataFrame = dataFrame
     self.stem = stem
+    if stem:
+      self.stemmer = StemmerFactory().create_stemmer()
     self.save_path = save_path
-    tp.set_options(tp.OPT.URL, tp.OPT.MENTION, tp.OPT.URL, tp.OPT.EMOJI, tp.OPT.SMILEY)
+    tp.set_options(tp.OPT.URL, tp.OPT.MENTION)
 
 
   def preprocess(self, text):
-    tempText = tp.tokenize(text)
-    tempText = re.sub(r'[^\w\s]', '', tempText)
+    # Clean Tweet
+    tempText = tp.clean(text)
     if self.stem:
-      stemmer = StemmerFactory().create_stemmer()
-      tempText = stemmer.stem(tempText)
+      # Stem text, clean emoji, punctuation, and lowercase, clean trailing spaces
+      tempText = self.stemmer.stem(tempText)
+    else:
+      # Handle Hashtag
+      tempText = tempText.replace("#","").replace("\n", " ")
+      # Remove Punctuation
+      tempText = tempText.translate(str.maketrans('', '', string.punctuation))
+      # Lowercase text
+      tempText = tempText.lower()
+      # Clean multiple spaces
+      tempText = re.sub('\\s+', ' ', tempText)
     return tempText
 
   def main(self):
