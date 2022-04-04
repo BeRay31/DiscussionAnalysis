@@ -62,34 +62,35 @@ class DeepTrainer(Trainer):
     # strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
 
     # with strategy.scope():
-    self.model = DeepClassifier(
-      {**self.config["master"], **self.config["classifier"]}
-    )
+    with tf.device("GPU:7"):
+      self.model = DeepClassifier(
+        {**self.config["master"], **self.config["classifier"]}
+      )
 
-    # Compile model
-    self.model.compile(
-      loss=CategoricalCrossentropy(),
-      optimizer=Adam(learning_rate=self.config["trainer"]["learning_rate"]),
-    )
+      # Compile model
+      self.model.compile(
+        loss=CategoricalCrossentropy(),
+        optimizer=Adam(learning_rate=self.config["trainer"]["learning_rate"]),
+      )
 
-    # Define train callbacks
-    callbacks = [
-      LearningRateScheduler(scheduler),
-      CustomSaver(self.models_path)
-    ]
+      # Define train callbacks
+      callbacks = [
+        LearningRateScheduler(scheduler),
+        CustomSaver(self.models_path)
+      ]
 
-    start = time()
-    # Fit Model
-    self.model.fit(
-      self.data["x_train"],
-      self.data["y_train"],
-      batch_size=self.config["trainer"]["batch_size"],
-      epochs=self.config["trainer"]["epochs"],
-      validation_data=(self.data["x_dev"], self.data["y_dev"]),
-      callbacks=callbacks,
-    )
-    end = time()
-    self.overall_time_train = round(end - start, 2)
+      start = time()
+      # Fit Model
+      self.model.fit(
+        self.data["x_train"],
+        self.data["y_train"],
+        batch_size=self.config["trainer"]["batch_size"],
+        epochs=self.config["trainer"]["epochs"],
+        validation_data=(self.data["x_dev"], self.data["y_dev"]),
+        callbacks=callbacks,
+      )
+      end = time()
+      self.overall_time_train = round(end - start, 2)
 
   def evaluate(self):
     # prepare dir for evaluation
@@ -100,38 +101,38 @@ class DeepTrainer(Trainer):
     for model_weight in model_weights:
       # Load best model
       self.model.load_weights(os.path.join(self.models_path, model_weight))
-      
-      start = time()
-      pred_train = self.model.predict(
-        self.data["x_train"],
-        batch_size=self.config["trainer"]["batch_size"],
-        verbose=1,
-      )
-      end = time()
-      train_pred_time = round(end - start, 2)
-
-      start = end
-      pred_dev = self.model.predict(
-        self.data["x_dev"],
-        batch_size=self.config["trainer"]["batch_size"],
-        verbose=1,
-      )
-      end = time()
-      dev_pred_time = round(end - start, 2)
-
-      test_pred_time = None
-      pred_test = np.asarray([])
-      if not self.data["test"].empty:
-        start = end
-        pred_test = self.model.predict(
-          self.data["x_test"],
+      with tf.device("GPU:7"):
+        start = time()
+        pred_train = self.model.predict(
+          self.data["x_train"],
           batch_size=self.config["trainer"]["batch_size"],
-          verbose=1
+          verbose=1,
         )
         end = time()
-        test_pred_time = round(end - start, 2)
+        train_pred_time = round(end - start, 2)
 
-      self.save(pred_train, pred_dev, pred_test, train_pred_time, dev_pred_time, test_pred_time, model_weight)
+        start = end
+        pred_dev = self.model.predict(
+          self.data["x_dev"],
+          batch_size=self.config["trainer"]["batch_size"],
+          verbose=1,
+        )
+        end = time()
+        dev_pred_time = round(end - start, 2)
+
+        test_pred_time = None
+        pred_test = np.asarray([])
+        if not self.data["test"].empty:
+          start = end
+          pred_test = self.model.predict(
+            self.data["x_test"],
+            batch_size=self.config["trainer"]["batch_size"],
+            verbose=1
+          )
+          end = time()
+          test_pred_time = round(end - start, 2)
+
+        self.save(pred_train, pred_dev, pred_test, train_pred_time, dev_pred_time, test_pred_time, model_weight)
 
   def save(self, y_train_pred: np.array, y_dev_pred: np.array, y_test_pred: np.array, train_pred_time, dev_pred_time, test_pred_time, model_name):
     train_key = self.config["master"]["train_key"]
@@ -246,15 +247,6 @@ class DeepTrainer(Trainer):
       msg += "Training learning rate: {}\n".format(self.config["trainer"]["learning_rate"])
       msg += "Training Epochs: {}\n".format(self.config["trainer"]["epochs"])
       msg += "\n"
-      msg += "========\t\t Tokenizer Details \t\t========\n\n"
-      msg += "Tokenizer type: {}\n".format(self.config["loader"]["tokenizer_type"])
-      msg += "Tokenizer model name: {}\n".format(self.config["loader"]["model_name"])
-      msg += "Tokenizer max length: {}\n".format(self.config["loader"]["tokenizer_config"]["max_length"])
-      msg += "\n"
-      msg += "========\t\t Classifier Details \t\t========\n\n"
-      msg += "Classifier type: {}\n".format(self.config["classifier"]["type"])
-      msg += "Classifier model name: {}\n".format(self.config["classifier"]["model_name"])
-      msg += "\n"
       msg += "========\t\t Recurrent Layer Details \t\t========\n\n"
       msg += "Recurrent layer type: {}\n".format(self.config["classifier"]["recurrent_layer"])
       msg += "Recurrent layer number of unit: {}\n".format(self.config["classifier"]["recurrent_unit"])
@@ -280,7 +272,6 @@ class DeepTrainer(Trainer):
       msg += "\n"
       msg += "========\t\t test Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(test_accuracy_score)
-      msg += "\nConfusion matrix:\n{}\n".format(test_confusion_matrix)
       msg += "\nConfusion matrix:\n{}\n".format(test_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(test_classification_report)
       msg += "\n"
