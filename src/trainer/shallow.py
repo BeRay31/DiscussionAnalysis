@@ -38,9 +38,9 @@ class ShallowTrainer(Trainer):
     
     train_pred = self.classifier.evaluate(self.data[train_key], self.embedder)
     dev_pred = self.classifier.evaluate(self.data[dev_key], self.embedder)
+    test_pred = {}
     if not self.data[test_key].empty:
       test_pred = self.classifier.evaluate(self.data[test_key], self.embedder)
-    test_pred = {}
     print("Model Successfully Evaluated Data\n")
 
     return {
