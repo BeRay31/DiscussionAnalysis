@@ -6,12 +6,13 @@ import re
 import os
 
 class DataPreprocessor:
-  def __init__(self, dataFrame, save_path, stem = False):
+  def __init__(self, dataFrame, save_path, save_name="train", stem = False):
     self.dataFrame = dataFrame
     self.stem = stem
     if stem:
       self.stemmer = StemmerFactory().create_stemmer()
     self.save_path = save_path
+    self.save_name = save_name
     tp.set_options(tp.OPT.URL, tp.OPT.MENTION)
 
 
@@ -37,5 +38,5 @@ class DataPreprocessor:
       self.dataFrame.loc[idx, "Tweet"] = self.preprocess(self.dataFrame.loc[idx, "Tweet"])
       self.dataFrame.loc[idx, "Comment"] = self.preprocess(self.dataFrame.loc[idx, "Comment"])
     self.dataFrame.dropna(inplace=True)
-    self.dataFrame.to_csv(os.path.join(self.save_path, f"{os.path.basename(self.save_path)}_preprocessed.csv"))
+    self.dataFrame.to_csv(os.path.join(self.save_path, f"{self.save_name}_preprocessed.csv"))
     return self.dataFrame

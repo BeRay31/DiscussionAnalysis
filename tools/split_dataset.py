@@ -7,33 +7,46 @@ import argparse
 from data_preprocessor import DataPreprocessor
 
 class DataSplitter:
-  def __init__(self, data_path, save_path, prefix = "data", is_sampling_enabled = False, test_size = 0.33, random_state=13518136, clean_null=True, preprocessing = False):
+  def __init__(self, data_path, test_data_path, save_path, prefix = "data", is_sampling_enabled = False, test_size = 0.33, random_state=13518136, clean_null=True, preprocessing = False, stemming = False):
     if not os.path.isfile(data_path):
       raise ValueError("Data not found (incorrect data path)")
     if not os.path.isdir(save_path):
       raise ValueError("Save directory isn't found (incorrect save path)")
     self.data_path = data_path
+    self.test_data_path = test_data_path
     self.save_path = save_path
     self.prefix = prefix
     self.is_sampling_enabled = is_sampling_enabled
     self.test_size = test_size
     self.random_state = random_state
     self.clean_null = clean_null
-    self.dataFrame = None
+    self.dataFrame = pd.DataFrame([])
+    self.testDataFrame = pd.DataFrame([])
     self.ros_model = RandomOverSampler(random_state=self.random_state)
     self.rus_model = RandomUnderSampler(random_state=self.random_state)
     self.preprocessing = preprocessing
+    self.stemming = stemming
   
   def load_data(self):
     # Data must be csv
     self.dataFrame = pd.read_csv(self.data_path)
-    print(f"Loaded data at {self.data_path}")
-    total_null = sum(self.dataFrame.isnull().sum())
-    if self.clean_null and total_null > 0:
+    print(f"Train and Dev data Loaded from {self.data_path}")
+    train_dev_total_null = sum(self.dataFrame.isnull().sum())
+    
+    test_total_null = 0
+    if os.path.isfile(self.test_data_path):
+      self.testDataFrame = pd.read_csv(self.test_data_path)
+      print(f"testdata Loaded from {self.test_data_path}")
+      test_total_null = sum(self.testDataFrame.isnull().sum())
+
+    if self.clean_null and (train_dev_total_null > 0 or test_total_null > 0):
       self.dataFrame.dropna(inplace=True)
-      print(f"Total {total_null} row contains null values dropped")
+      print(f"Total {train_dev_total_null} row from train and dev data that contains null values dropped")
+      print(f"Total {test_total_null} row from train and dev data that contains null values dropped")
+
     if self.preprocessing:
-      self.dataFrame = DataPreprocessor(self.dataFrame, os.path.abspath(os.path.join(self.data_path, os.pardir))).main()
+      self.dataFrame = DataPreprocessor(self.dataFrame, os.path.abspath(os.path.join(self.data_path, os.pardir)), save_name="train_dev", stem=self.stemming).main()
+      self.testDataFrame = DataPreprocessor(self.testDataFrame, os.path.abspath(os.path.join(self.test_data_path, os.pardir)), save_name="test", stem=self.stemming).main()
 
   def sampling(self, dfTrain: pd.DataFrame, dfDev: pd.DataFrame, dev_resample = False, model_type = "ros", label_key = "Label"):
     """
@@ -43,10 +56,13 @@ class DataSplitter:
       SamplingModel = self.ros_model
     else:
       SamplingModel = self.rus_model
+    
     X_train = dfTrain.drop([label_key], axis=1)
     Y_train = dfTrain[label_key]
+
     X_dev = dfDev.drop([label_key], axis=1)
     Y_dev = dfDev[label_key]
+
     print(f"Resampling data with {model_type}")
     X_train, Y_train = SamplingModel.fit_resample(X_train, Y_train)
     if dev_resample:
@@ -76,6 +92,8 @@ class DataSplitter:
     os.mkdir(data_dir)
     train.to_csv(os.path.join(data_dir, "train.csv"), index=False)
     dev.to_csv(os.path.join(data_dir, "dev.csv"), index=False)
+    if not self.testDataFrame.empty:
+      self.testDataFrame.to_csv(os.path.join(data_dir, "test.csv"), index=False)
     print(f"New {self.prefix}_{suffix} data saved at {data_dir}")
 
 
@@ -98,6 +116,8 @@ if __name__  == '__main__':
           description='Train Split test integrated with makedir os')
   parser.add_argument('--data_path', type=str, default='./dataset/data.csv',
                       help='Path to data to be splitted')
+  parser.add_argument('--test_data_path', type=str, default='./test_dataset/data.csv',
+                      help='Path to test data to be splitted')
   parser.add_argument('--save_path', type=str, default='./dataset/split',
                       help='Path to output split data')
   parser.add_argument('--prefix', type=str, default='new',
@@ -112,12 +132,15 @@ if __name__  == '__main__':
                       help='Clean null data')
   parser.add_argument('--preprocessing', default=False, type=bool,
                       help='Activate preprocessing with DataPreprocessing class')
+  parser.add_argument('--stemming', default=False, type=bool,
+                      help='Activate Stemming with DataPreprocessing class')
   args = parser.parse_args()
 
-  DataSplitter(data_path=args.data_path, save_path=args.save_path,
-    prefix=args.prefix, is_sampling_enabled=args.is_sampling_enabled,
-    test_size=args.test_size, random_state=args.random_state, 
-    clean_null=args.clean_null, preprocessing=args.preprocessing).main()
+  DataSplitter(data_path=args.data_path, test_data_path=args.test_data_path,
+    save_path=args.save_path, prefix=args.prefix,
+    is_sampling_enabled=args.is_sampling_enabled, test_size=args.test_size,
+    random_state=args.random_state, clean_null=args.clean_null,
+    preprocessing=args.preprocessing).main()
 
   
 
