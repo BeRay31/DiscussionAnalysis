@@ -140,7 +140,7 @@ if __name__  == '__main__':
     save_path=args.save_path, prefix=args.prefix,
     is_sampling_enabled=args.is_sampling_enabled, test_size=args.test_size,
     random_state=args.random_state, clean_null=args.clean_null,
-    preprocessing=args.preprocessing).main()
+    preprocessing=args.preprocessing, stemming=args.stemming).main()
 
   
 
