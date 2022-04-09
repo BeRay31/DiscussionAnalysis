@@ -65,6 +65,7 @@ class DeepTrainer(Trainer):
       self.model = DeepClassifier(
         {**self.config["master"], **self.config["classifier"]}
       )
+      start = time()
 
       # Train with Freeze embedding weights
       if self.config["trainer"]["freeze_embedding"]:
@@ -103,7 +104,6 @@ class DeepTrainer(Trainer):
         CustomSaver(self.models_path)
       ]
 
-      start = time()
       # Fit Model
       self.model.fit(
         self.data["x_train"],
