@@ -34,10 +34,16 @@ classifier:
   recurrent_unit: 64
   recurrent_dropout: 0.4
 trainer:
+  gpus: 1 | 2 | 3
   batch_size: 4
   learning_rate: 5.0e-05
   epochs: 2
-  gpus: 1 | 2 | 3
+  freeze_embedding: true
+  train_freeze:
+    learning_rate: 1.0e-04
+    batch_size: 4
+    epochs: 2
+
 
 
 

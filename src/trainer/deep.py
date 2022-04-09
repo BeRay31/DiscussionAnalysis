@@ -66,6 +66,31 @@ class DeepTrainer(Trainer):
         {**self.config["master"], **self.config["classifier"]}
       )
 
+      # Train with Freeze embedding weights
+      if self.config["trainer"]["freeze_embedding"]:
+        self.model.embedder.trainable = False
+        # Didn't save the model cuz it doesn't train the whole model
+        freeze_callbacks = [
+          LearningRateScheduler(scheduler)
+        ]
+        freeze_embedder_config = self.config["trainer"]["train_freeze"]
+        # Compile freeze model
+        self.model.compile(
+          loss=CategoricalCrossentropy(),
+          optimizer=Adam(learning_rate=freeze_embedder_config["learning_rate"]),
+        )
+        # fit freeze model
+        self.model.fit(
+          self.data["x_train"],
+          self.data["y_train"],
+          batch_size=freeze_embedder_config["batch_size"],
+          epochs=freeze_embedder_config["epochs"],
+          validation_data=(self.data["x_dev"], self.data["y_dev"]),
+          callbacks=freeze_callbacks,
+        )
+        self.model.summary()
+        self.model.embedder.trainable = True
+
       # Compile model
       self.model.compile(
         loss=CategoricalCrossentropy(),
