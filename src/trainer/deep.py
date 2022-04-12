@@ -1,8 +1,6 @@
-from this import d
 from src.loader import DeepLoader
 from src.trainer import Trainer
 from src.classifier import DeepClassifier
-from src.util import get_latest_version
 from src.callback import CustomSaver
 
 import tensorflow as tf
@@ -12,10 +10,8 @@ import pandas as pd
 from time import time
 
 tf.random.set_seed(13518136)
-from src.util import construct_time, dump_config, write_dict
+from src.util import construct_time, dump_config
 from datetime import datetime
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from scipy.stats import pearsonr, spearmanr
 
 from tensorflow.keras.callbacks import (
   LearningRateScheduler

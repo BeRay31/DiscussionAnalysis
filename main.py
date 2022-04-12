@@ -23,6 +23,7 @@ if __name__ == "__main__":
       if not i in disabled_gpu:
         visible_gpu.append(physical_devices[i])
     tf.config.set_visible_devices(visible_gpu, 'GPU')
+    print(f"GPU {disabled_gpu} are not visible in this train")
 
   if args.run_type.lower() == "shallow":
     from src.trainer.shallow import main
