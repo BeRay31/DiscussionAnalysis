@@ -44,9 +44,10 @@ class DeepTrainer(Trainer):
     gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
     config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
     taken_gpu = []
-    for i, gpu_name in enumerate(gpu_names):
-        if i in config_taken:
-            taken_gpu.append(gpu_name)
+    for taken in config_taken:
+      for gpu_name in gpu_names:
+        if str(taken) in gpu_name:
+          taken_gpu.append(gpu_name)
     print(f"Taken GPU: {taken_gpu}")
     self.strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
 
