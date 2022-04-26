@@ -18,7 +18,7 @@ from tensorflow.keras.callbacks import (
 )
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.optimizers import Adam
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, f1_score
 
 
 def scheduler(epoch, lr):
@@ -186,6 +186,12 @@ class DeepTrainer(Trainer):
       y_true=df_train[self.config["master"]["label_key"]],
       y_pred=df_train["Prediction"]
     )
+    train_f1_score = f1_score(
+      y_true=df_train[self.config["master"]["label_key"]],
+      y_pred=df_train["Prediction"],
+      labels=labels,
+      average='weighted'
+    )
 
     dev_prediction = [self.get_label(arr) for arr in y_dev_pred]
     dev_prediction = pd.DataFrame(dev_prediction, columns=["Prediction"])
@@ -203,6 +209,12 @@ class DeepTrainer(Trainer):
     dev_accuracy_score = accuracy_score(
       y_true=df_dev[self.config["master"]["label_key"]],
       y_pred=df_dev["Prediction"]
+    )
+    dev_f1_score = f1_score(
+      y_true=df_dev[self.config["master"]["label_key"]],
+      y_pred=df_dev["Prediction"],
+      labels=labels,
+      average='weighted'
     )
 
     # Save to CSV
@@ -231,6 +243,12 @@ class DeepTrainer(Trainer):
       test_accuracy_score = accuracy_score(
         y_true=df_test[self.config["master"]["label_key"]],
         y_pred=df_test["Prediction"]
+      )
+      test_f1_score = f1_score(
+        y_true=df_test[self.config["master"]["label_key"]],
+        y_pred=df_test["Prediction"],
+        labels=labels,
+        average='weighted'
       )
 
     # Data distribution
@@ -284,16 +302,19 @@ class DeepTrainer(Trainer):
       msg += "\n"
       msg += "========\t\t Training Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(train_accuracy_score)
+      msg += "\nAccuracy:\n{}\n".format(train_f1_score)
       msg += "\nConfusion matrix:\n{}\n".format(train_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(train_classification_report)
       msg += "\n"
       msg += "========\t\t Dev Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(dev_accuracy_score)
+      msg += "\nAccuracy:\n{}\n".format(dev_f1_score)
       msg += "\nConfusion matrix:\n{}\n".format(dev_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(dev_classification_report)
       msg += "\n"
       msg += "========\t\t test Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(test_accuracy_score)
+      msg += "\nAccuracy:\n{}\n".format(test_f1_score)
       msg += "\nConfusion matrix:\n{}\n".format(test_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(test_classification_report)
       msg += "\n"
