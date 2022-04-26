@@ -302,19 +302,19 @@ class DeepTrainer(Trainer):
       msg += "\n"
       msg += "========\t\t Training Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(train_accuracy_score)
-      msg += "\nAccuracy:\n{}\n".format(train_f1_score)
+      msg += "\nF1 Score:\n{}\n".format(train_f1_score)
       msg += "\nConfusion matrix:\n{}\n".format(train_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(train_classification_report)
       msg += "\n"
       msg += "========\t\t Dev Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(dev_accuracy_score)
-      msg += "\nAccuracy:\n{}\n".format(dev_f1_score)
+      msg += "\nF1 Score:\n{}\n".format(dev_f1_score)
       msg += "\nConfusion matrix:\n{}\n".format(dev_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(dev_classification_report)
       msg += "\n"
       msg += "========\t\t test Prediction Metrics Details Recap \t\t========\n\n"
       msg += "\nAccuracy:\n{}\n".format(test_accuracy_score)
-      msg += "\nAccuracy:\n{}\n".format(test_f1_score)
+      msg += "\nF1 Score:\n{}\n".format(test_f1_score)
       msg += "\nConfusion matrix:\n{}\n".format(test_confusion_matrix)
       msg += "\nClassification report:\n{}\n".format(test_classification_report)
       msg += "\n"
