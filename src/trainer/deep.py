@@ -25,7 +25,7 @@ def scheduler(epoch, lr):
   return lr * tf.math.exp(-0.1)
 
 class DeepTrainer(Trainer):
-  def __init__(self, config_path):
+  def __init__(self, config_path, gpu_used):
     super().__init__(config_path)
     self.loader = DeepLoader(
       {**self.config["master"], **self.config["loader"]}
@@ -35,17 +35,18 @@ class DeepTrainer(Trainer):
     self.eval_path = None
     self.overall_time_train = None
     self.strategy = None
+    self.gpu_used = "/GPU:" + str(gpu_used)
     # Set GPU
-    gpus = tf.config.experimental.list_physical_devices("GPU")
-    gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
-    config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
-    taken_gpu = []
-    for taken in config_taken:
-      for gpu_name in gpu_names:
-        if str(taken) in gpu_name:
-          taken_gpu.append(gpu_name)
-    print(f"Taken GPU: {taken_gpu}")
-    self.strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
+    # gpus = tf.config.experimental.list_physical_devices("GPU")
+    # gpu_names = [gpu.name.split("e:")[1] for gpu in gpus]
+    # config_taken = set([int(i) for i in self.config["trainer"]["gpus"].split("|")])
+    # taken_gpu = []
+    # for taken in config_taken:
+    #   for gpu_name in gpu_names:
+    #     if str(taken) in gpu_name:
+    #       taken_gpu.append(gpu_name)
+    # print(f"Taken GPU: {taken_gpu}")
+    # self.strategy = tf.distribute.MirroredStrategy(devices=taken_gpu)
 
   # Convert arr to label
   def get_label(self, arr):
@@ -58,7 +59,7 @@ class DeepTrainer(Trainer):
     self.models_path = os.path.join(self.directory_path, "models")
     os.mkdir(self.models_path)
 
-    with self.strategy.scope():
+    with tf.device(self.gpu_used):
       self.model = DeepClassifier(
         {**self.config["master"], **self.config["classifier"]}
       )
@@ -123,7 +124,7 @@ class DeepTrainer(Trainer):
       # Load best model
       self.model.load_weights(os.path.join(self.models_path, model_weight))
       
-      with self.strategy.scope():
+      with tf.device(self.gpu_used):
         start = time()
         pred_train = self.model.predict(
           self.data["x_train"],
@@ -322,8 +323,8 @@ class DeepTrainer(Trainer):
     dump_config(os.path.join(save_path, "config.yaml"), self.config)
     print("Log and Model Successfully Saved to {}\n".format(save_path))
 
-def main(config):
-  trainer = DeepTrainer(config)
+def main(config, gpu_used):
+  trainer = DeepTrainer(config, gpu_used)
   print("========\t\t Trainer is Fitting \t\t========")
   trainer.fit()
   print("========\t\t Trainer is evaluating \t\t========")

@@ -8,6 +8,7 @@ def parse_arguments():
   )
   parser.add_argument("--config", required=True, help="config path for models")
   parser.add_argument("--disabled_gpu", required=False, help="GPU to hide using set visible devices using this template gpu1 | gpu2", default="")
+  parser.add_argument("--gpu_used", required=False, help="GPU used 3 4 5")
   return parser.parse_args()
 
 
@@ -30,4 +31,4 @@ if __name__ == "__main__":
     main(args.config)
   elif args.run_type.lower() == "deep":
     from src.trainer.deep import main
-    main(args.config)
+    main(args.config, args.gpu_used)

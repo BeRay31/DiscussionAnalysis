@@ -7,7 +7,7 @@ import argparse
 from data_preprocessor import DataPreprocessor
 
 class DataSplitter:
-  def __init__(self, data_path, test_data_path, save_path, prefix = "data", is_sampling_enabled = False, test_size = 0.33, random_state=13518136, clean_null=True, preprocessing = False, stemming = False):
+  def __init__(self, data_path, test_data_path, save_path, prefix = "data", is_sampling_enabled = False, test_size = 0.33, random_state=13518136, clean_null=True, preprocessing = False, stemming = False, handle_sarcasm = "Normal"):
     if not os.path.isfile(data_path):
       raise ValueError("Data not found (incorrect data path)")
     if not os.path.isdir(save_path):
@@ -26,6 +26,7 @@ class DataSplitter:
     self.rus_model = RandomUnderSampler(random_state=self.random_state)
     self.preprocessing = preprocessing
     self.stemming = stemming
+    self.handle_sarcasm = handle_sarcasm
   
   def load_data(self):
     # Data must be csv
@@ -45,8 +46,8 @@ class DataSplitter:
       print(f"Total {test_total_null} row from train and dev data that contains null values dropped")
 
     if self.preprocessing:
-      self.dataFrame = DataPreprocessor(self.dataFrame, os.path.abspath(os.path.join(self.data_path, os.pardir)), save_name="train_dev", stem=self.stemming).main()
-      self.testDataFrame = DataPreprocessor(self.testDataFrame, os.path.abspath(os.path.join(self.test_data_path, os.pardir)), save_name="test", stem=self.stemming).main()
+      self.dataFrame = DataPreprocessor(self.dataFrame, os.path.abspath(os.path.join(self.data_path, os.pardir)), save_name="train_dev", stem=self.stemming, handle_sarcasm=self.handle_sarcasm).main()
+      self.testDataFrame = DataPreprocessor(self.testDataFrame, os.path.abspath(os.path.join(self.test_data_path, os.pardir)), save_name="test", stem=self.stemming, handle_sarcasm=self.handle_sarcasm).main()
 
   def sampling(self, dfTrain: pd.DataFrame, dfDev: pd.DataFrame, dev_resample = False, model_type = "ros", label_key = "Label"):
     """
@@ -134,13 +135,15 @@ if __name__  == '__main__':
                       help='Activate preprocessing with DataPreprocessing class')
   parser.add_argument('--stemming', default=False, type=bool,
                       help='Activate Stemming with DataPreprocessing class')
+  parser.add_argument('--handle_sarcasm', default="Normal", type=str,
+                      help='handle sarcasm class  Delete | Replace | Normal')
   args = parser.parse_args()
 
   DataSplitter(data_path=args.data_path, test_data_path=args.test_data_path,
     save_path=args.save_path, prefix=args.prefix,
     is_sampling_enabled=args.is_sampling_enabled, test_size=args.test_size,
     random_state=args.random_state, clean_null=args.clean_null,
-    preprocessing=args.preprocessing, stemming=args.stemming).main()
+    preprocessing=args.preprocessing, stemming=args.stemming, handle_sarcasm=args.handle_sarcasm).main()
 
   
 
