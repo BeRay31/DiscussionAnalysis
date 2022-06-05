@@ -31,6 +31,8 @@ class DeepClassifier(Model):
       self.recurrent = GRU(self.config["recurrent_unit"])
     elif self.config["recurrent_layer"].lower() == "bigru":
       self.recurrent = Bidirectional(GRU(self.config["recurrent_unit"]))
+    elif self.config["recurrent_layer"].lower() == "dense":
+      self.recurrent = Dense(self.config["recurrent_unit"], activation="relu", name="dense")
     else:
       self.recurrent = None
       raise ValueError("only support (lstm | bilstm | gru | bigru) layer type")
@@ -45,7 +47,10 @@ class DeepClassifier(Model):
   def call(self, X, training=None):
     if not self.config["type"] in WORD_VECTORS:
       # Pass to BERT or XLNet Model
-      X_embed = self.embedder(X)["last_hidden_state"]
+      if self.config["recurrent_layer"].lower() == "dense":
+        X_embed = self.embedder(X)["pooler_output"]
+      else:
+        X_embed = self.embedder(X)["last_hidden_state"]
     else:
       X_embed = X
     
