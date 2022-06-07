@@ -21,17 +21,17 @@ class DeepLoader:
           "key_list": self.config["key_list"]
         }
       )
-    
-    data_path = self.config["data_path"]
-    self.train = pd.read_csv(os.path.join(data_path, "train.csv")).reset_index(drop=True)
-    self.dev = pd.read_csv(os.path.join(data_path, "dev.csv")).reset_index(drop=True)
-    self.merged_data = pd.concat([self.train, self.dev])
-    print(f"train and dev dataset from {data_path} loaded!")
-    
-    self.test = pd.DataFrame([])
-    if os.path.isfile(os.path.join(data_path, "test.csv")):
-      self.test = pd.read_csv(os.path.join(data_path, "test.csv"))
-      print(f"testdataset from {data_path} loaded!")
+    if (self.config["data_path"]):
+      data_path = self.config["data_path"]
+      self.train = pd.read_csv(os.path.join(data_path, "train.csv")).reset_index(drop=True)
+      self.dev = pd.read_csv(os.path.join(data_path, "dev.csv")).reset_index(drop=True)
+      self.merged_data = pd.concat([self.train, self.dev])
+      print(f"train and dev dataset from {data_path} loaded!")
+      
+      self.test = pd.DataFrame([])
+      if os.path.isfile(os.path.join(data_path, "test.csv")):
+        self.test = pd.read_csv(os.path.join(data_path, "test.csv"))
+        print(f"testdataset from {data_path} loaded!")
 
   def __drop_null(self):
     self.train.dropna(inplace=True)
@@ -68,6 +68,20 @@ class DeepLoader:
         self.one_hot_encoding_based_on_labels(item)
       )
     return arr
+
+  def tokenize_single(self, tweet, retweet):
+    return self.tokenizer(
+      tweet,
+      retweet,
+      **self.config["tokenizer_config"]
+    )
+  
+  def tokenize_batch(self, tweet, retweets):
+    return self.tokenizer(
+      [tweet for i in range(len(retweets))],
+      retweets,
+      **self.config["tokenizer_config"]
+    )
 
   def __tokenize(self, sample):
     train = self.train
@@ -154,6 +168,3 @@ class DeepLoader:
   def __call__(self, sample=False):
     self.__drop_null()
     return self.__tokenize(sample)
-
-
-

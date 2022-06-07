@@ -7,7 +7,7 @@ import re
 import os
 
 class DataPreprocessor:
-  def __init__(self, dataFrame, save_path, save_name="train", stem = False, handle_sarcasm = "Normal"):
+  def __init__(self, dataFrame, save_path, save_name="train", stem = False, handle_sarcasm = "Normal", handle_neutral = "Normal"):
     self.dataFrame = dataFrame
     self.stem = stem
     if stem:
@@ -15,6 +15,7 @@ class DataPreprocessor:
     self.save_path = save_path
     self.save_name = save_name
     self.handle_sarcasm = handle_sarcasm
+    self.handle_neutral = handle_neutral
     tp.set_options(tp.OPT.URL, tp.OPT.MENTION)
 
 
@@ -42,12 +43,19 @@ class DataPreprocessor:
     # Handle Sarcasm Label
     i_pro_sarcasm = self.dataFrame[self.dataFrame["Label"] == "Pro Sarcasm"].index
     i_cont_sarcasm = self.dataFrame[self.dataFrame["Label"] == "Contra Sarcasm"].index
+    i_uncor_sarcasm = self.dataFrame[self.dataFrame["Label"] == "Uncorrelated"].index
     if self.handle_sarcasm == "Delete":
       self.dataFrame.drop(i_pro_sarcasm, inplace=True)
       self.dataFrame.drop(i_cont_sarcasm, inplace=True)
     elif self.handle_sarcasm == "Replace":
       self.dataFrame.loc[i_pro_sarcasm, "Label"] = "Pro"
       self.dataFrame.loc[i_cont_sarcasm, "Label"] = "Contra"
+    
+    if self.handle_neutral == "Delete":
+      self.dataFrame.drop(i_uncor_sarcasm, inplace=True)
+    elif self.handle_neutral == "Replace":
+      self.dataFrame.loc[i_uncor_sarcasm, "Label"] = "Neutral"
+      
     self.dataFrame.dropna(inplace=True)
     self.dataFrame.to_csv(os.path.join(self.save_path, f"{self.save_name}_preprocessed.csv"))
     return self.dataFrame
