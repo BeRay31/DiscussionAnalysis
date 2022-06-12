@@ -21,7 +21,7 @@ class DeepLoader:
           "key_list": self.config["key_list"]
         }
       )
-    if (self.config["data_path"]):
+    if ('data_path' in self.config.keys()):
       data_path = self.config["data_path"]
       self.train = pd.read_csv(os.path.join(data_path, "train.csv")).reset_index(drop=True)
       self.dev = pd.read_csv(os.path.join(data_path, "dev.csv")).reset_index(drop=True)
@@ -69,17 +69,10 @@ class DeepLoader:
       )
     return arr
 
-  def tokenize_single(self, tweet, retweet):
+  def tokenize(self, tweet, retweet):
     return self.tokenizer(
-      tweet,
-      retweet,
-      **self.config["tokenizer_config"]
-    )
-  
-  def tokenize_batch(self, tweet, retweets):
-    return self.tokenizer(
-      [tweet for i in range(len(retweets))],
-      retweets,
+      list(tweet),
+      list(retweet),
       **self.config["tokenizer_config"]
     )
 
