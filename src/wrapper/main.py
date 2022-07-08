@@ -7,7 +7,7 @@ default_config = {
   'master': {
     'model_name': 'cardiffnlp/twitter-xlm-roberta-base',
     'labels': 'Pro_Neutral_Contra',
-    'model_weight_path': 'D:\\WorkBench\\TA NLP\\res_deep\\model_14.h5'
+    'model_weight_path': 'D:\\WorkBench\\TA NLP\\res_deep\\res_53\\3_label\\final_model_3_label.h5'
   },
   'model_config': {
     'type': 'roberta',
