@@ -136,6 +136,7 @@ class ShallowTrainer(Trainer):
       msg += "========\t\t Train Data Classification Details Recap \t\t========\n\n"
       msg += "Predict time: {}\n".format(construct_time(train_pred["predict_time"]))
       msg += "Score: {}\n".format(train_pred["score"])
+      msg += "F1 Score: {}\n".format(train_pred["f1_score"])
       msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
       msg += "\nConfusion matrix:\n{}\n".format(train_pred["confusion_matrix"])
       msg += "\nClassification report:\n{}\n".format(train_pred["classification_report"])
@@ -143,6 +144,7 @@ class ShallowTrainer(Trainer):
       msg += "========\t\t Dev Data Classification Details Recap \t\t========\n\n"
       msg += "Predict time: {}\n".format(construct_time(dev_pred["predict_time"]))
       msg += "Score: {}\n".format(dev_pred["score"])
+      msg += "F1 Score: {}\n".format(dev_pred["f1_score"])
       msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
       msg += "\nConfusion matrix:\n{}\n".format(dev_pred["confusion_matrix"])
       msg += "\nClassification report:\n{}\n".format(dev_pred["classification_report"])
@@ -151,6 +153,7 @@ class ShallowTrainer(Trainer):
         msg += "========\t\t Test Data Classification Details Recap \t\t========\n\n"
         msg += "Predict time: {}\n".format(construct_time(test_pred["predict_time"]))
         msg += "Score: {}\n".format(test_pred["score"])
+        msg += "F1 Score: {}\n".format(test_pred["f1_score"])
         msg += "Labels:\n{}\n".format(self.config["master"]["labels"].split("_"))
         msg += "\nConfusion matrix:\n{}\n".format(test_pred["confusion_matrix"])
         msg += "\nClassification report:\n{}\n".format(test_pred["classification_report"])

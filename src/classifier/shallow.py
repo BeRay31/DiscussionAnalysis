@@ -2,7 +2,7 @@ from sklearn.svm import SVC
 from sklearn.decomposition import PCA
 from src.embedder import WordVectorsEmbedder
 from src.util import load_model_with_pickle
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, f1_score, accuracy_score
 import time
 import pandas as pd
 class ShallowClassifier:
@@ -56,18 +56,21 @@ class ShallowClassifier:
     X = embedder.df_to_vector(data)
     Y = data[self.config["label_key"]]
     X = self.decomposer.transform(X)
-
+    labels = self.config["labels"].split("_")
     # Recap and predict
     pred = self.model.predict(X)
     end = time.time()
     overall_predict_time = round(end - start, 2)
     model_score = self.model.score(X, Y)
-    
+    model_f1_score = f1_score(
+        y_true=Y,
+        y_pred=pd.DataFrame(pred),
+        labels=labels,
+        average='weighted'
+      )
     # Metrics
-    labels = self.config["labels"].split("_")
     confusion_mat = confusion_matrix(Y, pred, labels=labels)
     classification_rep = classification_report(Y, pred, labels=labels)
-
     pred = pd.DataFrame(pred)
     pred = pd.concat([data, pred], axis=1)
     pred.columns = data.columns.tolist() + ["Prediction"]
@@ -75,6 +78,7 @@ class ShallowClassifier:
     return {
       "predict_time": overall_predict_time,
       "score": model_score,
+      "f1_score": model_f1_score,
       "confusion_matrix": confusion_mat,
       "classification_report": classification_rep,
       "prediction": pred
