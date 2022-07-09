@@ -15,6 +15,26 @@ class ShallowLoader:
       self.test = pd.read_csv(os.path.join(data_path, "test.csv")).reset_index(drop=True)
       print(f"testdataset from {data_path} loaded!")
 
+  def convert_label(self, val):
+    labels = self.config["labels"].split("_")
+    for i in range(len(labels)):
+      if (labels[i] == val):
+        return i
+      else:
+        continue
+
+  def reverse_label(self, val):
+    labels = self.config["labels"].split("_")
+    return labels[val]
+  
+  def convert_label_df(self, df: pd.DataFrame):
+    for index, row in df.iterrows():
+      df.loc[index, self.config["label_key"]] = self.convert_label(row[self.config["label_key"]])
+
+  def reverse_label_df(self, df):
+    for index, row in df.iterrows():
+      df.loc[index, self.config["label_key"]] = self.reverse_label(row[self.config["label_key"]])
+
   def __drop_null(self):
     self.train.dropna(inplace=True)
     self.dev.dropna(inplace=True)
@@ -32,11 +52,24 @@ class ShallowLoader:
     else:
       self.test = pd.DataFrame([])
 
-  def __tokenize(self):
+  def __tokenize(self, sample):
     train = self.train
     dev = self.dev
     merged = self.merged_data
     test = self.test
+
+    if sample:
+      train = train.sample(20)
+      dev = dev.sample(20)
+      merged = merged.sample(20)
+      if not test.empty:
+        test = test.sample(20)
+
+    if self.config["model_type"] != 'svm':
+      self.convert_label_df(train)
+      self.convert_label_df(dev)
+      self.convert_label_df(test)
+      self.convert_label_df(merged)
       
     x_train = train.drop([self.config["label_key"]], axis=1)
     y_train = train[self.config["label_key"]]
@@ -63,6 +96,6 @@ class ShallowLoader:
 
     return res
   
-  def __call__(self):
+  def __call__(self, sample):
     self.__drop_null()
-    return self.__tokenize()
+    return self.__tokenize(sample)

@@ -58,7 +58,7 @@ class ShallowClassifier:
     # Train Model
     self.fit_model(X, Y)
   
-  def evaluate(self, data, embedder):
+  def evaluate(self, data, embedder, loader = None):
     if not self.model:
       raise ValueError("Model doesn't available")
     start = time.time()
@@ -70,9 +70,18 @@ class ShallowClassifier:
     labels = self.config["labels"].split("_")
     # Recap and predict
     pred = self.model.predict(X)
+    if (self.config["type"].lower() == "xgb"):
+      Y = [loader.reverse_label(val) for val in Y]
+      pred = [loader.reverse_label(val) for val in pred]
+    elif (self.config["type"].lower() == "catb"):
+      Y = [loader.reverse_label(val) for val in Y]
+      pred = [loader.reverse_label(val[0]) for val in pred]
     end = time.time()
     overall_predict_time = round(end - start, 2)
-    model_score = self.model.score(X, Y)
+    model_score = accuracy_score(
+      y_true=Y,
+      y_pred=pd.DataFrame(pred),
+    )
     model_f1_score = f1_score(
         y_true=Y,
         y_pred=pd.DataFrame(pred),

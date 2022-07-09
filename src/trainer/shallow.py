@@ -18,7 +18,7 @@ class ShallowTrainer(Trainer):
     self.classifier = ShallowClassifier(
       {**self.config["master"], **self.config["classifier"]}
     )
-    self.data = self.loader()
+    self.data = self.loader(self.config["master"]["sampling"])
   
   def fit(self):
     # Train embedder
@@ -36,11 +36,11 @@ class ShallowTrainer(Trainer):
     dev_key = self.config["master"]["dev_key"]
     test_key = self.config["master"]["test_key"]
     
-    train_pred = self.classifier.evaluate(self.data[train_key], self.embedder)
-    dev_pred = self.classifier.evaluate(self.data[dev_key], self.embedder)
+    train_pred = self.classifier.evaluate(self.data[train_key], self.embedder, self.loader)
+    dev_pred = self.classifier.evaluate(self.data[dev_key], self.embedder, self.loader)
     test_pred = {}
     if not self.data[test_key].empty:
-      test_pred = self.classifier.evaluate(self.data[test_key], self.embedder)
+      test_pred = self.classifier.evaluate(self.data[test_key], self.embedder, self.loader)
     print("Model Successfully Evaluated Data\n")
 
     return {
@@ -116,10 +116,6 @@ class ShallowTrainer(Trainer):
       msg += "\n"
       msg += "========\t\t Classifier Details \t\t========\n\n"
       msg += "Classifier type: {}\n".format(self.config["classifier"]["type"])
-      msg += "Classifier kernel: {}\n".format(self.config["classifier"]["svm_config"]["kernel"])
-      msg += "Classifier gamma: {}\n".format(self.config["classifier"]["svm_config"]["gamma"])
-      msg += "Classifier max_iter: {}\n".format(self.config["classifier"]["svm_config"]["max_iter"])
-      msg += "Classifier degree: {}\n".format(self.config["classifier"]["svm_config"]["degree"])
       msg += "Classifier train time: {}\n".format(construct_time(self.classifier.train_model_time))
       msg += "\n"
       msg += "========\t\t Decomposer Details \t\t========\n\n"
