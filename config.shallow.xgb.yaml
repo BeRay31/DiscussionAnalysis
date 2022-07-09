@@ -1,0 +1,50 @@
+master:
+  prefix: xgb
+  release_mode: patch
+  description: This is model description
+  train_key: train
+  dev_key: dev
+  test_key: test
+  save_path: 'D:\WorkBench\TA NLP\res'
+  label_key: Label
+  labels: Uncorrelated_Contra Sarcasm_Pro_Neutral_Contra_Pro Sarcasm
+loader:
+  data_path: 'D:\WorkBench\TA NLP\dataset_splitted\rey_rus'
+  test_data_path: 'D:\WorkBench\TA NLP\dataset_splitted\test.csv'
+  type: shallow
+  model_type: xgb
+  key_list: Tweet_Comment
+embedder:
+  model_type: word2vec
+  model_behavior: concat
+  is_pretrained: true
+  retrain: true
+  model_path: 'D:\WorkBench\TA NLP\pretrained_models\w2v\word2vec.model'
+  key_list: Tweet_Comment
+  vector_size: 100
+  window: 5
+  min_count: 1
+  epoch: 5
+  max_sequence: 101
+  log_oov: false
+classifier:
+  load_model: false
+  model_path: tst
+  type: xgb
+  config:
+    scale_pos_weight: 1
+    learning_rate: 0.35
+    colsample_bytree: 0.4
+    subsample: 0.8
+    objective: "multi:softmax"
+    n_estimators: 1000
+    reg_alpha: 0.3
+    max_depth: 10
+    gamma: 10
+  decomposer:
+    load_model: false
+    model_path: tst
+    type: pca
+    decomposer_config:
+      n_components: 0.8
+      svd_solver: auto

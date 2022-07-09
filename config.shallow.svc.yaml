@@ -31,7 +31,7 @@ classifier:
   load_model: false
   model_path: tst
   type: svc
-  svm_config:
+  config:
     kernel: rbf
     gamma: scale
     verbose: false

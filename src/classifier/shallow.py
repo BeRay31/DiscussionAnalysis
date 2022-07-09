@@ -1,4 +1,6 @@
 from sklearn.svm import SVC
+from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
 from sklearn.decomposition import PCA
 from src.embedder import WordVectorsEmbedder
 from src.util import load_model_with_pickle
@@ -31,7 +33,16 @@ class ShallowClassifier:
   
   def fit_model(self, X, Y):
     start = time.time()
-    self.model = SVC(**self.config["svm_config"], random_state=13518136)
+    if (self.config["type"].lower() == "svc"):
+      self.model = SVC(**self.config["config"], random_state=13518136)
+    elif (self.config["type"].lower() == "xgb"):
+      self.model = XGBClassifier(**self.config["config"], seed=13518136)
+      pass
+    elif (self.config["type"].lower() == "catb"):
+      self.model = CatBoostClassifier(**self.config["config"], random_seed=13518136)
+      pass
+    else:
+      self.model = SVC(**self.config["config"], random_state=13518136)
     self.model.fit(X, Y)
     end = time.time()
     self.train_model_time = round(end - start, 2)
