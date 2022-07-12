@@ -70,11 +70,11 @@ class DeepLoader:
     return arr
 
   def tokenize(self, tweet, retweet):
-    return self.tokenizer(
+    return dict(self.tokenizer(
       list(tweet),
       list(retweet),
       **self.config["tokenizer_config"]
-    )
+    ))
 
   def __tokenize(self, sample):
     train = self.train
