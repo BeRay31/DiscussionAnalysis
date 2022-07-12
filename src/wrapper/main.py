@@ -1,3 +1,4 @@
+import os
 from pandas import DataFrame
 from src.util import get_config
 from src.loader import DeepLoader
@@ -10,7 +11,8 @@ default_config = {
     'model_name': 'cardiffnlp/twitter-xlm-roberta-base',
     'labels': 'Pro_Neutral_Contra',
     'model_weight_path': '/raid/data/m13518136/res/deep/final_label/xlmroberta-normalros-0.0.0/models/model_0.h5',
-    'label_key': 'Label'
+    'label_key': 'Label',
+    'final_label': "Uncorrelated_Pro_Neutral_Contra"
   },
   'master_binary': {
     'model_name': 'cardiffnlp/twitter-xlm-roberta-base',
@@ -32,13 +34,11 @@ default_config = {
       'return_tensors': 'tf',
       'truncation': True
     }
-  }
+  },
+  'key_list': "Tweet_Comment",
+  'save_path': "D:\\WorkBench\\TA NLP\\res"
 }
 
-
-df_config = {
-  'key': "Tweet_Comment"
-}
 
 sample_tweet = ["test", "test", "test"]
 sample_retweet = ["test", "test", "test"]
@@ -84,12 +84,13 @@ class Wrapper:
   
   def predict_2Pipeline_df(self, df: DataFrame):
     key_list = self.config["key_list"].split("_")
-    input = self.loader.tokenize(df[key_list[0]], df[key_list[1]])
+    binary_input = self.loader.tokenize(df[key_list[0]], df[key_list[1]])
 
-    relation = self.model_binary.predict(input)
+    relation = self.model_binary.predict(binary_input)
     relation_prediction = [self.get_label(arr, self.config["master_binary"]) for arr in relation]
-    relation_prediction = pd.DataFrame(relation_prediction, columns=["Binary Correlation"])
+    relation_prediction = pd.DataFrame(relation_prediction, columns=["Binary Correlation"]),
     pred = pd.concat([df, relation_prediction], axis = 1)
+    pred.to_csv(os.path.join(self.config["save_path"], "correlation.csv"))
 
     relation_conf_matrix = confusion_matrix(
       y_true=pred[self.config["master_binary"]["label_key"]],
@@ -108,8 +109,96 @@ class Wrapper:
     relation_f1_score = f1_score(
       y_true=pred[self.config["master_binary"]["label_key"]],
       y_pred=pred["Binary Correlation"],
-      labels=self.config["master_binary"]["labels"].split("_")
+      labels=self.config["master_binary"]["labels"].split("_"),
       average='weighted'
     )
 
-    # filter uncorrelated pred
+    def updateLabel(row, typeLabel):
+      if ((row["Binary Correlation"] == "Uncorrelated") and typeLabel == "Binary Classification"):
+        row["Prediction"] = row["Binary Correlation"]
+      else:
+        row["Prediction"] = row["Semantic Prediction"]
+      return row
+
+    correlation_pred_data = pred.drop(pred[pred["Binary Correlation"] != "Uncorrelated"].index, axis=0)
+    correlation_pred_data.apply(updateLabel, axis=1)    
+    
+    data_without_uncorrelated = pred.drop(pred[pred["Binary Correlation"] == "Uncorrelated"].index, axis=0)
+    semantic_input = self.loader.tokenize(data_without_uncorrelated[key_list[0]], data_without_uncorrelated[key_list[1]])
+
+    semantic = self.model.predict(semantic_input)
+    semantic_prediction = [self.get_label(arr, self.config["master"]) for arr in semantic]
+    semantic_prediction = pd.DataFrame(semantic_prediction, columns=["Semantic Prediction"]),
+    semantic_pred = pd.concat([data_without_uncorrelated, semantic_prediction], axis = 1)
+    semantic_pred.to_csv(os.path.join(self.config["save_path"], "semantic.csv"))
+
+    semantic_conf_matrix = confusion_matrix(
+      y_true=semantic_pred[self.config["master"]["label_key"]],
+      y_pred=semantic_pred["Semantic Prediction"],
+      labels=self.config["master"]["labels"].split("_")
+    )
+    semantic_classification_report = classification_report(
+      y_true=semantic_pred[self.config["master"]["label_key"]],
+      y_pred=semantic_pred["Semantic Prediction"],
+      labels=self.config["master"]["labels"].split("_")
+    )
+    semantic_accuracy_score = accuracy_score(
+      y_true=semantic_pred[self.config["master"]["label_key"]],
+      y_pred=semantic_pred["Semantic Prediction"]
+    )
+    semantic_f1_score = f1_score(
+      y_true=semantic_pred[self.config["master"]["label_key"]],
+      y_pred=semantic_pred["Semantic Prediction"],
+      labels=self.config["master"]["labels"].split("_"),
+      average='weighted'
+    )
+
+    semantic_pred.apply(updateLabel, axis=1)
+    correlation_pred_data.drop(["Binary Correlation"], axis=1)
+    semantic_pred.drop(["Semantic Prediction"], axis=1)
+
+    final_pred = pd.concat([correlation_pred_data, semantic_pred], ignore_index=True)
+    final_pred.to_csv(os.path.join(self.config["save_path"], "final.csv"))
+
+    final_conf_matrix = confusion_matrix(
+      y_true=final_pred[self.config["master"]["label_key"]],
+      y_pred=final_pred["Prediction"],
+      labels=self.config["master"]["final_label"].split("_")
+    )
+    final_classification_report = classification_report(
+      y_true=final_pred[self.config["master"]["label_key"]],
+      y_pred=final_pred["Prediction"],
+      labels=self.config["master"]["final_label"].split("_")
+    )
+    final_accuracy_score = accuracy_score(
+      y_true=final_pred[self.config["master"]["label_key"]],
+      y_pred=final_pred["Prediction"]
+    )
+    final_f1_score = f1_score(
+      y_true=final_pred[self.config["master"]["label_key"]],
+      y_pred=final_pred["Prediction"],
+      labels=self.config["master"]["final_label"].split("_"),
+      average='weighted'
+    )
+
+    print("====\tBinary Classification\t====")
+    print("Confusion Matrix:")
+    print(relation_conf_matrix)
+    print("Classification Report")
+    print(relation_classification_report)
+    print("F1Score :", relation_f1_score)
+    print("Accuracy Score:", relation_accuracy_score)
+    print("====\tSemantic Classification\t====")
+    print("Confusion Matrix:")
+    print(semantic_conf_matrix)
+    print("Classification Report")
+    print(semantic_classification_report)
+    print("F1Score :", semantic_f1_score)
+    print("Accuracy Score:", semantic_accuracy_score)
+    print("====\tMerged Classification\t====")
+    print("Confusion Matrix:")
+    print(final_conf_matrix)
+    print("Classification Report")
+    print(final_classification_report)
+    print("F1Score :", final_f1_score)
+    print("Accuracy Score:", final_accuracy_score)
