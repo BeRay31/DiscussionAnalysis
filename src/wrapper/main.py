@@ -182,6 +182,7 @@ class Wrapper:
     )
 
     print("====\tBinary Classification\t====")
+    print("Labels: {}".format(self.config["master_binary"]["labels"].split("_")))
     print("Confusion Matrix:")
     print(relation_conf_matrix)
     print("Classification Report")
@@ -189,6 +190,7 @@ class Wrapper:
     print("F1Score :", relation_f1_score)
     print("Accuracy Score:", relation_accuracy_score)
     print("====\tSemantic Classification\t====")
+    print("Labels: {}".format(self.config["master"]["labels"].split("_")))
     print("Confusion Matrix:")
     print(semantic_conf_matrix)
     print("Classification Report")
@@ -196,6 +198,7 @@ class Wrapper:
     print("F1Score :", semantic_f1_score)
     print("Accuracy Score:", semantic_accuracy_score)
     print("====\tMerged Classification\t====")
+    print("Labels: {}".format(self.config["master"]["final_label"].split("_")))
     print("Confusion Matrix:")
     print(final_conf_matrix)
     print("Classification Report")
