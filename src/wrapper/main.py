@@ -88,8 +88,8 @@ class Wrapper:
 
     relation = self.model_binary.predict(binary_input)
     relation_prediction = [self.get_label(arr, self.config["master_binary"]) for arr in relation]
-    relation_prediction = pd.DataFrame(relation_prediction, columns=["Binary Correlation"]),
-    pred = pd.concat([df, relation_prediction], axis = 1)
+    relation_prediction = pd.DataFrame(relation_prediction, columns=["Binary Correlation"])
+    pred = pd.concat([df.reset_index(drop=True), relation_prediction.reset_index(drop=True)], axis=1)
     pred.to_csv(os.path.join(self.config["save_path"], "correlation.csv"))
 
     relation_conf_matrix = confusion_matrix(
@@ -113,23 +113,23 @@ class Wrapper:
       average='weighted'
     )
 
-    def updateLabel(row, typeLabel):
-      if ((row["Binary Correlation"] == "Uncorrelated") and typeLabel == "Binary Classification"):
+    def updateLabel(row):
+      if ("Binary Correlation" in row.keys() and row["Binary Correlation"] == "Uncorrelated"):
         row["Prediction"] = row["Binary Correlation"]
       else:
         row["Prediction"] = row["Semantic Prediction"]
       return row
 
     correlation_pred_data = pred.drop(pred[pred["Binary Correlation"] != "Uncorrelated"].index, axis=0)
-    correlation_pred_data.apply(updateLabel, axis=1)    
+    correlation_pred_data = correlation_pred_data.apply(updateLabel, axis=1)    
     
     data_without_uncorrelated = pred.drop(pred[pred["Binary Correlation"] == "Uncorrelated"].index, axis=0)
     semantic_input = self.loader.tokenize(data_without_uncorrelated[key_list[0]], data_without_uncorrelated[key_list[1]])
 
     semantic = self.model.predict(semantic_input)
     semantic_prediction = [self.get_label(arr, self.config["master"]) for arr in semantic]
-    semantic_prediction = pd.DataFrame(semantic_prediction, columns=["Semantic Prediction"]),
-    semantic_pred = pd.concat([data_without_uncorrelated, semantic_prediction], axis = 1)
+    semantic_prediction = pd.DataFrame(semantic_prediction, columns=["Semantic Prediction"])
+    semantic_pred = pd.concat([data_without_uncorrelated.reset_index(drop=True), semantic_prediction.reset_index(drop=True)], axis=1)
     semantic_pred.to_csv(os.path.join(self.config["save_path"], "semantic.csv"))
 
     semantic_conf_matrix = confusion_matrix(
@@ -153,11 +153,11 @@ class Wrapper:
       average='weighted'
     )
 
-    semantic_pred.apply(updateLabel, axis=1)
-    correlation_pred_data.drop(["Binary Correlation"], axis=1)
-    semantic_pred.drop(["Semantic Prediction"], axis=1)
+    semantic_pred = semantic_pred.apply(updateLabel, axis=1)
+    correlation_pred_data.drop(["Binary Correlation"], axis=1, inplace=True)
+    semantic_pred.drop(["Semantic Prediction"], axis=1, inplace=True)
 
-    final_pred = pd.concat([correlation_pred_data, semantic_pred], ignore_index=True)
+    final_pred = pd.concat([correlation_pred_data.reset_index(drop=True), semantic_pred.reset_index(drop=True)])
     final_pred.to_csv(os.path.join(self.config["save_path"], "final.csv"))
 
     final_conf_matrix = confusion_matrix(

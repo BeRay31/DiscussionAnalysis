@@ -1,20 +1,17 @@
 from src.wrapper import Wrapper
+import pandas as pd
 
-tweets = [
-  "Harus diakui, joke Chris Rock jahat & gak lucu-lucu amat. Tapi Will Smith sampe naik panggung & nampar orang lagi perform itu lebih kelewatan. Menurut gw sih gitu, tapi yaudahlah ya. 🤪",
-  "terlepas dari banyak kekurangan di sanasini gw sih sebagai warga indonesia tetep bangga negara kita udah bisa menyelenggarakan moto gp 💙",
-  "terlepas dari banyak kekurangan di sanasini gw sih sebagai warga indonesia tetep bangga negara kita udah bisa menyelenggarakan moto gp 💙",
-  "terlepas dari banyak kekurangan di sanasini gw sih sebagai warga indonesia tetep bangga negara kita udah bisa menyelenggarakan moto gp 💙"
-]
 
-retweets = [
-  "si Chris Rock mang ga ada lawakan lain gitu ya selain prihal penyakit dan penampilan gundul istrinya will smith?",
-  "bangga donh 😊",
-  "di 1996 juga udah di selenggarakan moto gp koh",
-  "bangga tapi tidak dengan pawang hujannya🤣"
-]
+def correlation(x):
+  if x["Label"] == "Uncorrelated":
+    x["Correlation"] = "Uncorrelated"
+  else:
+    x["Correlation"] = "Correlated"
+  return x
 
 if __name__ == '__main__':
-  model_wrapper = Wrapper()
-  pred = model_wrapper.predict(tweets, retweets)
-  print(pred)
+  model_wrapper = Wrapper(config_path="D:\\WorkBench\\TA NLP\\test.yml")
+  df_test = pd.read_csv("D:\\WorkBench\\TA NLP\\res_deep\\res_53\\4_label\\pred_test.csv")
+  df_test.drop(["Prediction"], axis=1, inplace=True)
+  df_test = df_test.apply(correlation, axis=1)
+  pred = model_wrapper.predict_2Pipeline_df(df_test)

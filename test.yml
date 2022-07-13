@@ -1,0 +1,25 @@
+master:
+  model_name: cardiffnlp/twitter-xlm-roberta-base
+  labels: Pro_Neutral_Contra
+  model_weight_path: D:\WorkBench\TA NLP\res_deep\res_53\3_label\final_model_3_label.h5
+  label_key: Label
+  final_label: Uncorrelated_Pro_Neutral_Contra
+master_binary: 
+  model_name: cardiffnlp/twitter-xlm-roberta-base
+  labels: Uncorrelated_Correlated
+  model_weight_path: D:\\WorkBench\\TA NLP\\res_deep\\res_53\\binary\\binary.h5
+  label_key: Correlation
+model_config:
+  type: roberta
+  recurrent_layer: bilstm
+  recurrent_unit: 64
+  recurrent_dropout: 0.4
+loader_config: 
+  tokenizer_type: roberta
+  tokenizer_config: 
+    max_length: 512
+    padding: max_length
+    return_tensors: tf
+    truncation: True
+key_list: Tweet_Comment
+save_path: D:\\WorkBench\\TA NLP\\res
