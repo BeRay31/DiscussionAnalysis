@@ -61,14 +61,13 @@ class Wrapper:
     self.model(self.sample_data)
     self.model.load_weights(self.config['master']['model_weight_path'])
 
-    if (self.config["two_pipeline"]) {
+    if (self.config["two_pipeline"]):
       self.model_binary = DeepClassifier(
         {**self.config["master_binary"], **self.config["model_config"]}
       )
       self.model_binary(self.sample_data)
 
       self.model_binary.load_weights(self.config['master_binary']['model_weight_path'])
-    }
   
   def get_label(self, arr, masterConfig):
     labels = masterConfig["labels"].split("_")
