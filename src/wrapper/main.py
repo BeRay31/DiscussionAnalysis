@@ -35,6 +35,7 @@ default_config = {
       'truncation': True
     }
   },
+  'two_pipeline': True,
   'key_list': "Tweet_Comment",
   'save_path': "D:\\WorkBench\\TA NLP\\res"
 }
@@ -56,15 +57,18 @@ class Wrapper:
     self.model = DeepClassifier(
       {**self.config["master"], **self.config["model_config"]}
     )
-    self.model_binary = DeepClassifier(
-      {**self.config["master_binary"], **self.config["model_config"]}
-    )
     self.sample_data = self.loader.tokenize(sample_tweet, sample_retweet)
     self.model(self.sample_data)
-    self.model_binary(self.sample_data)
-
     self.model.load_weights(self.config['master']['model_weight_path'])
-    self.model_binary.load_weights(self.config['master_binary']['model_weight_path'])
+
+    if (self.config["two_pipeline"]) {
+      self.model_binary = DeepClassifier(
+        {**self.config["master_binary"], **self.config["model_config"]}
+      )
+      self.model_binary(self.sample_data)
+
+      self.model_binary.load_weights(self.config['master_binary']['model_weight_path'])
+    }
   
   def get_label(self, arr, masterConfig):
     labels = masterConfig["labels"].split("_")
@@ -73,20 +77,20 @@ class Wrapper:
 
   def predict(self, tweet, retweet):
     input = self.loader.tokenize(tweet, retweet)
-    pred = self.model.predict(input)
+    pred = self.model.predict(input, verbose=1)
     return [self.get_label(item) for item in pred]
   
   def predict_batch_retweet(self, tweet, retweets):
     tweets = [tweet for i in range(len(retweets))]
     input = self.loader.tokenize(tweets, retweets)
-    pred = self.model.predict(input)
+    pred = self.model.predict(input, verbose=1)
     return [self.get_label(item) for item in pred]
   
   def predict_2Pipeline_df(self, df: DataFrame):
     key_list = self.config["key_list"].split("_")
     binary_input = self.loader.tokenize(df[key_list[0]], df[key_list[1]])
 
-    relation = self.model_binary.predict(binary_input)
+    relation = self.model_binary.predict(binary_input, verbose=1)
     relation_prediction = [self.get_label(arr, self.config["master_binary"]) for arr in relation]
     relation_prediction = pd.DataFrame(relation_prediction, columns=["Binary Correlation"])
     pred = pd.concat([df.reset_index(drop=True), relation_prediction.reset_index(drop=True)], axis=1)
@@ -126,7 +130,7 @@ class Wrapper:
     data_without_uncorrelated = pred.drop(pred[pred["Binary Correlation"] == "Uncorrelated"].index, axis=0)
     semantic_input = self.loader.tokenize(data_without_uncorrelated[key_list[0]], data_without_uncorrelated[key_list[1]])
 
-    semantic = self.model.predict(semantic_input)
+    semantic = self.model.predict(semantic_input, verbose=1)
     semantic_prediction = [self.get_label(arr, self.config["master"]) for arr in semantic]
     semantic_prediction = pd.DataFrame(semantic_prediction, columns=["Semantic Prediction"])
     semantic_pred = pd.concat([data_without_uncorrelated.reset_index(drop=True), semantic_prediction.reset_index(drop=True)], axis=1)
